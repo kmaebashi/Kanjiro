@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/destyle.css">
+<link rel="stylesheet" href="css/kanjiro.css">
+<link rel="stylesheet" href="css/kanjiro_organizer.css">
+<script src="js/organizer.js"></script>
+<script src="js/calendar.js"></script>
+<title>幹事郎 ―― Webでスケジュール調整</title>
+</head>
+<body>
+<header>
+  <section>
+    <h1><a id="page-title" class="page-title" href="#">幹事郎</a></h1>
+  </section>
+</header>
+<div id="container">
+  <div id="container-horizontal">
+    <div id="container-event-information">
+      <p class="area-title">イベント情報</p>
+      <p>幹事の名前(参加者向けの画面に表示します)、イベントの名前と説明を入力してください。</p>
+      <p>幹事の名前(必須)</p>
+      <input type="text" id="event-name-input"/>
+      <p>イベント名(必須)</p>
+      <input type="text" id="event-name-input"/>
+      <p>イベント説明(任意)</p>
+      <textarea id="event-description"></textarea>
+    </div>
+    <div id="container-schedule">
+      <div id="container-calendar">
+        <p class="area-title">日程調整</p>
+        <p>カレンダーの日付をクリックすると、日程候補に日付が入ります。</p>
+        <div id="calendar-div">
+          <table id="calendar-table">
+            <tr>
+              <td class="calendar-left-arrow">≪</td>
+              <td class="calendar-header-month" colspan="5">2024年11月</td>
+              <td class="calendar-right-arrow">≫</td>
+            </tr>
+            <tr><th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th></tr>
+            <tr><td class="calendar-sunday"></td><td></td><td></td><td></td><td></td><td>1</td><td class="calendar-saturday">2</td></tr>
+            <tr><td class="calendar-sunday">3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td class="calendar-saturday">9</td></tr>
+            <tr><td class="calendar-sunday">10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td class="calendar-saturday">16</td></tr>
+            <tr><td class="calendar-sunday">17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td class="calendar-saturday">23</td></tr>
+            <tr><td class="calendar-sunday">24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td class="calendar-saturday">30</td></tr>
+          </table>
+        </div>
+      </div>
+      <div id="container-schedule-text">
+        <p>日付の後ろに追加する時刻</p>
+        <input type="text" id="schedule-append-time">
+        <p>日程候補</p>
+        <textarea id="schedule-textarea"></textarea>
+      </div>
+    </div>
+  </div>
+  <div id="container-settings">
+    <p class="area-title">設定</p>
+    <p>
+      <label>
+        <input type="checkbox" name="notshow" />
+        参加者の参加可能日を他の参加者に見せない
+      </label>
+    </p>
+    <p>
+      <label>
+        <input type="checkbox" name="notshow" />
+        自動日程決定機能(うらみっこなしモード)を使用する
+      </label>
+    </p>
+  </div>
+  <div id="create-button-div">
+    <button type="button" id="create-event-button">イベントを作成する</button>
+  </div>
+</div>
+<footer>
+  <section>
+    <p>Powerd by NanChaTte Framework</p>
+  </section>
+</footer>
+</body>
+</html>

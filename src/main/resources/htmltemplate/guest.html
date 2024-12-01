@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/destyle.css">
+<link rel="stylesheet" href="css/kanjiro.css">
+<link rel="stylesheet" href="css/kanjiro_guest.css">
+<title>幹事郎 ―― Webでスケジュール調整</title>
+</head>
+<body>
+<header>
+  <section>
+    <h1><a id="page-title" class="page-title" href="#">幹事郎</a></h1>
+  </section>
+</header>
+<div id="container">
+<h2>なんとかさん送別会</h2>
+<h3>イベントの内容</h3>
+<p id="organizer-name-line"><span class="title">幹事</span><span id="organizer-name">幹事 二郎</span></p>
+<p id="event-description">
+○○部のなんとかさんが○○月○○日付けで退職されることとなりました。<br>
+つきましては送別会を開催いたしますので、日程調整したいと思います。<br>
+<br>
+ご都合のよい日程に○を入れて回答してください。
+<br>
+19:00～とします。場所については未定ですが、名駅近辺です。<br>
+<br>
+それではよろしくお願いいたします。
+</p>
+<h3>回答いただいた方</h3>
+<p>※回答順です</p>
+<dl>
+<dt>1.幹事 二郎</dt>
+<dd>
+よろしくお願いいたします。
+</dd>
+<dt>2.田中</dt>
+<dd>
+11/16の週末は家族旅行の予定が入ってました……
+</dd>
+<dt>3.山本</dt>
+<dd>
+なんとかさんにはひとかたならぬお世話になりました。<br>
+ぜひ参加させていただきます。
+</dd>
+<dt>4.ふんどし仮面</dt>
+<dd>
+</dd>
+<dt>5.凍てつく道化師青井</dt>
+<dd>
+参加します!
+</dd>
+<dt>6.☆煉獄☆</dt>
+<dd>
+参加できそうな日が少なくてすみません。私の都合に構わず決めちゃってください。
+</dd>
+<dt>7.響童子</dt>
+<dd>
+よろしくお願いいたします。
+</dd>
+<dt>8.✝幻影～phantom～✝</dt>
+<dd>
+</dd>
+<dt>9.卍BLACKGOD卍</dt>
+<dd>
+</dd>
+<dt>10.kmaebashi</dt>
+<dd>
+じっくり飲めるところ希望。
+</dd>
+</dl>
+<h3>日程候補</h3>
+<table id="possible-dates-table">
+  <tr>
+    <th>日程</th><th>○</th><th>△</th><th>×</th><th>幹事 二郎</th><th>田中</th><th>山本</th><th>ふんどし仮面</th><th>凍てつく道化師青井</th><th>☆煉獄☆</th><th>響童子</th><th>✝幻影～phantom～✝</th><th>卍BLACKGOD卍</th><th>kmaebashi</th>
+  </tr>
+  <tr>
+    <th>11/09(土)</th><td>2人</td><td>2人</td><td>6人</td><td>○</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td><td>×</td><td>×</td><td>×</td>
+  </tr>
+  <tr>
+    <th>11/10(日)</th><td>6人</td><td>1人</td><td>3人</td><td>○</td><td>○</td><td>×</td><td>×</td><td>△</td><td>○</td><td>○</td><td>○</td><td>×</td><td>○</td>
+  </tr>
+  <tr>
+    <th>11/16(土)</th><td>5人</td><td>2人</td><td>3人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>○</td><td>△</td><td>△</td><td>○</td><td>○</td><td>○</td>
+  </tr>
+  <tr>
+    <th>11/17(日)</th><td>2人</td><td>2人</td><td>6人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td>
+  </tr>
+</table>
+<div class="reply-button-div">
+  <button type="button" class="reply-button-class">回答する</button>
+</div>
+<div id="input-reply-container">
+  <div id="input-reply-div">
+    <p>あなたのお名前</p>
+    <input type="text" id="guest-name"/>
+    <p>日程情報</p>
+    <table id="reply-table">
+      <tr>
+        <td>11/09(土)</td>
+        <td>
+          <label>
+            <input type="radio" name="date0" value="1"/>○
+          </label>
+          <label>
+            <input type="radio" name="date0" value="2"/>△
+          </label>
+          <label>
+            <input type="radio" name="date0" value="3" checked />×
+          </label>
+        </td>
+      </tr>
+      <tr>
+        <td>11/10(日)</td>
+        <td>
+          <label>
+            <input type="radio" name="date1" value="1"/>○
+          </label>
+          <label>
+            <input type="radio" name="date1" value="2"/>△
+          </label>
+          <label>
+            <input type="radio" name="date1" value="3" checked />×
+          </label>
+        </td>
+      </tr>
+      <tr>
+        <td>11/16(土)</td>
+        <td>
+          <label>
+            <input type="radio" name="date2" value="1"/>○
+          </label>
+          <label>
+            <input type="radio" name="date2" value="2"/>△
+          </label>
+          <label>
+            <input type="radio" name="date2" value="3" checked />×
+          </label>
+        </td>
+      </tr>
+      <tr>
+        <td>11/17(日)</td>
+        <td>
+          <label>
+            <input type="radio" name="date3" value="1"/>○
+          </label>
+          <label>
+            <input type="radio" name="date3" value="2"/>△
+          </label>
+          <label>
+            <input type="radio" name="date3" value="3" checked />×
+          </label>
+        </td>
+      </tr>
+    </table>
+    <p>コメント</p>
+    <textarea id="comment-textarea">
+    </textarea>
+    <p>
+      <label>
+        <input type="checkbox" name=""/>
+        他人による変更を禁止する
+      </label><br>
+      <span class="input-reply-comment">※自分でも、他の端末から変更できなくなります</span>
+    </p>
+  </div>
+</div>
+<div class="reply-button-div">
+  <button type="button" class="reply-button-class">回答を保存する</button>
+</div>
+</div>
+</div>
+<footer>
+  <section>
+    <p>Powerd by NanChaTte Framework</p>
+  </section>
+</footer>
+</body>
+</html>

@@ -1,0 +1,163 @@
+@media (min-width: 768px) {
+  #container {
+    width: 1020px;
+    margin: auto;
+    padding: 10px;
+    background-color: #ffffff;
+  }
+  #input-reply-container {
+    text-align: center;
+  }
+  #input-reply-div {
+    text-align: left;
+    display: inline-block;
+  }
+}
+
+@media (max-width: 768px) {
+  #container {
+    width: 100%;
+    margin: auto;
+    padding: 10px;
+    background-color: #ffffff;
+  }
+  #input-reply-container {
+    text-align: center;
+  }
+  #input-reply-div {
+    text-align: left;
+    display: inline-block;
+  }
+}
+
+h2 {
+  padding: 0.4em 0.5em;
+  font-size: 18px;
+  font-weight: bold;
+  background: #f4f4f4;
+  border-left: solid 5px #e06d15;
+  border-bottom: solid 3px #d7d7d7;
+  margin-bottom: 10px;
+}
+
+h3 {
+  padding: 0.4em 0.5em;
+  font-weight: bold;
+  background: #f4f4f4;
+  border-left: solid 5px #e06d15;
+  margin-bottom: 10px;
+}
+
+dl {
+  margin: 1em 0;
+}
+
+dd {
+  margin-left: 1em;
+  margin-bottom: 0.5em;
+}
+
+#organizer-name-line {
+  margin-bottom: 10px;
+}
+
+#organizer-name-line .title {
+  font-weight: bold;
+}
+
+#organizer-name-line .title::after {
+  content: "：";
+}
+
+#event-description {
+  margin-bottom: 10px;
+}
+
+#possible-dates-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  border: solid 1px black;
+  text-align: center;
+  vertical-align: middle;
+  word-break: break-all;
+}
+
+table th {
+  background-color: whitesmoke;
+}
+
+div.reply-button-div {
+  height: 100px;
+  padding-top: 10px;
+  text-align: center;
+}
+
+button.reply-button-class {
+  width: 60%;
+  height: 60px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  font-size: 25px;
+  color: white;
+  background-color: #e06d15;
+  border-radius: 5px;
+}
+
+button.reply-button-class:hover {
+  background-color: #eda975;
+}
+
+#reply-table td {
+  padding: 5px;
+}
+
+#reply-table label {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  font-size: 30px;
+  padding: 5px;
+  border: 1px solid #808080;
+  border-radius: 8px;
+}
+
+label:has(input[type="radio"]:checked) {
+  color: white;
+  background-color: #e06d15;
+}
+
+label:has(input[type="radio"]:not(:checked)) {
+  color: black;
+  background: linear-gradient(#eeeeee, #bbbbbb);
+}
+
+label:has(input[type="radio"]:not(:checked)):hover {
+  color: black;
+  background: linear-gradient(#bbbbbb, #eeeeee);
+}
+
+
+#input-reply-div p {
+  margin-top: 10px;
+}
+
+#input-reply-div input[type="text"] {
+  width: 25em;
+}
+
+#input-reply-div textarea {
+  width: 25em;
+  height: 4em;
+}
+
+span.input-reply-comment {
+  margin-left: 2em;
+  font-size: 14px;
+}
+
