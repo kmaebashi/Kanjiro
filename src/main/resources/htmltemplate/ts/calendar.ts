@@ -30,8 +30,11 @@ class Calendar {
     const headTr: HTMLTableRowElement = document.createElement("tr");
 
     const leftArrowTd: HTMLTableCellElement = document.createElement("td");
-    leftArrowTd.innerText = "≪";
-    leftArrowTd.classList.add("calendar-left-arrow");
+    if (Calendar.#prevMonthExists(this.currentDate)) {
+      leftArrowTd.innerText = "≪";
+      leftArrowTd.classList.add("calendar-left-arrow");
+      leftArrowTd.onclick = this.leftArrowClicked.bind(this);
+    }
     headTr.appendChild(leftArrowTd);
 
     const monthTd: HTMLTableCellElement = document.createElement("td");
@@ -45,10 +48,8 @@ class Calendar {
     rightArrowTd.innerText = "≫";
     rightArrowTd.classList.add("calendar-right-arrow");
     headTr.appendChild(rightArrowTd);
-    tableElem.appendChild(headTr);
-
-    leftArrowTd.onclick = this.leftArrowClicked.bind(this);
     rightArrowTd.onclick = this.rightArrowClicked.bind(this);
+    tableElem.appendChild(headTr);
 
     const youbiTr: HTMLTableRowElement = document.createElement("tr");
     const youbiStrArray = ["日", "月", "火", "水", "木", "金", "土"];
@@ -74,17 +75,19 @@ class Calendar {
           }
           tdElem.innerText = "" + nth;
           tdElem.setAttribute("data-date", nth.toString());
-          tdElem.classList.add("calendar-date");
-          if (youbi == 0) {
-            tdElem.classList.add("calendar-sunday");
+          if (Calendar.#isFutureDate(this.currentDate.getFullYear(),
+                                     this.currentDate.getMonth(), nth)) {
+            tdElem.classList.add("calendar-date");
+            if (youbi == 0) {
+              tdElem.classList.add("calendar-sunday");
+            }
+            if (youbi == 6) {
+              tdElem.classList.add("calendar-saturday");
+            }
+            tdElem.onclick = this.dateClicked.bind(this);
+          } else {
+            tdElem.classList.add("unclickable-date");
           }
-          if (youbi == 6) {
-            tdElem.classList.add("calendar-saturday");
-          }
-          if (nth == this.currentDate.getDate()) {
-            tdElem.classList.add("calendar-target-date");
-          }
-          tdElem.onclick = this.dateClicked.bind(this);
           nth++;
           if (nth > lastNth) {
             endFlag = true;
@@ -165,5 +168,22 @@ class Calendar {
     }
 
     return newDate;
+  }
+
+  static #prevMonthExists(date: Date): boolean {
+    const nowDate: Date = new Date();
+    return date.getFullYear() > nowDate.getFullYear()
+          || (date.getFullYear() == nowDate.getFullYear()
+              && date.getMonth() > nowDate.getMonth());
+  }
+
+  static #isFutureDate(year: number, month: number, nth: number): boolean {
+    const nowDate: Date = new Date();
+    return year > nowDate.getFullYear()
+          || (year == nowDate.getFullYear()
+              && month > nowDate.getMonth())
+          || (year == nowDate.getFullYear()
+              && month == nowDate.getMonth()
+              && nth >= nowDate.getDate());
   }
 }

@@ -2,6 +2,9 @@ package com.kmaebashi.nctfwimpl;
 
 import com.kmaebashi.nctfw.InvokerOption;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class Util {
     Util() {}
 
@@ -21,5 +24,12 @@ public class Util {
         } else {
             return null;
         }
+    }
+
+    public static String exceptionToString(Throwable ex) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        return sw.toString();
     }
 }

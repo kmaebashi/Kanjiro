@@ -14,9 +14,9 @@ import jakarta.servlet.http.HttpSession;
 public class TopPageController {
     private TopPageController() {}
 
-    public static RoutingResult showPage(ControllerInvoker invoker) {
+    public static RoutingResult showPage(ControllerInvoker invoker, String deviceId, String nextCsrfToken) {
         return invoker.invoke((context) -> {
-            return OrganizerPageService.showTopPage(context.getServiceInvoker());
+            return OrganizerPageService.showTopPage(context.getServiceInvoker(), deviceId, nextCsrfToken);
         });
     }
 

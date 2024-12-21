@@ -149,17 +149,30 @@ td.calendar-right-arrow {
 td.calendar-date {
   width: 2em;
   text-align: center;
+  cursor: pointer;
+}
+
+td.calendar-date:hover {
+  background-color: #ffffcc;
 }
 
 td.calendar-saturday {
   background-color: #ccccff;
 }
+td.calendar-saturday:hover {
+  background-color: #eeeeff;
+}
+
 td.calendar-sunday {
   background-color: #ffcccc;
 }
 
-td.calendar-target-date {
-  background-color: #ffffcc;
+td.calendar-sunday:hover {
+  background-color: #ffeeee;
+}
+
+td.unclickable-date {
+  background-color: #888888;
 }
 
 #create-event-button {

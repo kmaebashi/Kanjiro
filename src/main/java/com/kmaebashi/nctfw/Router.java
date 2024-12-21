@@ -1,4 +1,5 @@
 package com.kmaebashi.nctfw;
+import com.kmaebashi.jsonparser.ClassMapper;
 import com.kmaebashi.nctfwimpl.Util;
 import com.kmaebashi.nctfwimpl.ControllerInvokerImpl;
 import com.kmaebashi.nctfwimpl.DbAccessContextImpl;
@@ -64,10 +65,21 @@ public abstract class Router {
                 processImageFileResult(ifr, response);
             }
         } catch (BadRequestException ex) {
-            this.getLogger().info(ex.getMessage());
-            showErrorPage(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage(), response);
+            this.getLogger().info(ex.toString());
+            if (ex.isApi()) {
+                returnErrorJson(HttpServletResponse.SC_BAD_REQUEST, ex, response);
+            } else {
+                showErrorPage(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage(), response);
+            }
+        } catch (InternalException ex) {
+            this.getLogger().info(ex.toString());
+            if (ex.isApi()) {
+                returnErrorJson(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex, response);
+            } else {
+                showErrorPage(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage(), response);
+            }
         } catch (NotFoundException ex) {
-            this.getLogger().info(ex.getMessage());
+            this.getLogger().info(ex.toString());
             showErrorPage(HttpServletResponse.SC_NOT_FOUND, ex.getMessage(), response);
         } catch (Exception ex) {
             this.getLogger().error("内部エラー。" + ex.toString());
@@ -83,18 +95,35 @@ public abstract class Router {
                 htmlFile = "400error.html";
             } else if (statusCode == HttpServletResponse.SC_NOT_FOUND) {
                 htmlFile = "404error.html";
+            } else if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
+                htmlFile = "500error.html";
             }
             Path htmlPath = this.getHtmlTemplateDirectory().resolve(htmlFile);
             Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
             Element elem = doc.getElementById("message");
             elem.text(message);
 
+            response.setStatus(statusCode);
             response.setContentType("text/html; charset=UTF-8");
             PrintWriter out = response.getWriter();
             out.println(doc.html());
             out.close();
         } catch (Exception ex) {
             throw new InternalException("エラーページの出力に失敗。", ex);
+        }
+    }
+
+    private void returnErrorJson(int statusCode, Exception exception, HttpServletResponse response) {
+        try {
+            ApiError apiError = new ApiError(statusCode, exception.getMessage());
+            String retJson = ClassMapper.toJson(apiError);
+            response.setStatus(statusCode);
+            response.setContentType("application/json; charset=UTF-8");
+            PrintWriter out = response.getWriter();
+            out.println(retJson);
+            out.close();
+        } catch (Exception ex) {
+            throw new InternalException("エラーJSONの返却に失敗。", ex);
         }
     }
 

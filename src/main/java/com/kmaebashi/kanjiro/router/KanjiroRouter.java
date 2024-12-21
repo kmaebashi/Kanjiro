@@ -8,13 +8,18 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
+import com.kmaebashi.kanjiro.common.CookieKey;
 import com.kmaebashi.kanjiro.common.SessionKey;
 import com.kmaebashi.kanjiro.controller.AuthenticateController;
+import com.kmaebashi.kanjiro.controller.OrganizerController;
 import com.kmaebashi.kanjiro.controller.TopPageController;
+import com.kmaebashi.kanjiro.controller.Util;
+import com.kmaebashi.kanjiro.util.RandomIdGenerator;
 import com.kmaebashi.nctfw.BadRequestException;
 import com.kmaebashi.nctfw.ControllerInvoker;
 import com.kmaebashi.nctfw.RoutingResult;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import com.kmaebashi.nctfw.Router;
 import com.kmaebashi.simplelogger.Logger;
@@ -35,6 +40,18 @@ public class KanjiroRouter extends Router {
         RoutingResult result = null;
         HttpSession session = request.getSession(true);
         String deviceId = (String)session.getAttribute(SessionKey.DEVICE_ID);
+        String nextCsrfToken;
+        if (deviceId == null) {
+            String[] nextCsrfTokenBuf = new String[1];
+            AuthenticateController.authenticateDevice(invoker, session, nextCsrfTokenBuf);
+            nextCsrfToken = nextCsrfTokenBuf[0];
+        } else {
+            nextCsrfToken = Util.searchCookie(request, CookieKey.CSRF_TOKEN).getValue();
+            if (nextCsrfToken == null) {
+                nextCsrfToken = RandomIdGenerator.getRandomId();
+            }
+        }
+        deviceId = (String)session.getAttribute(SessionKey.DEVICE_ID);
 
         HashMap<String, Object> params = new HashMap<>();
         Route route = SelectRoute.select(path, params);
@@ -42,16 +59,15 @@ public class KanjiroRouter extends Router {
             throw new BadRequestException("URLが不正です。");
         }
         if (request.getMethod().equals("GET")) {
-            if (deviceId == null
-                && route == Route.TOP) {
-                result = AuthenticateController.authenticateDevice(invoker, session, path);
-                return result;
-            } else if (route == Route.TOP) {
-                result = TopPageController.showPage(invoker);
+            if (route == Route.TOP) {
+                result = TopPageController.showPage(invoker, deviceId, nextCsrfToken);
                 return result;
             }
         } else if (request.getMethod().equals("POST")) {
-
+            if (route == Route.POST_EVENT_INFO) {
+                result = OrganizerController.postEventInfo(invoker, deviceId);
+                return result;
+            }
         }
 
         return null;

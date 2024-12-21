@@ -1,5 +1,6 @@
 package com.kmaebashi.kanjiro.service;
 
+import com.kmaebashi.kanjiro.util.RandomIdGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

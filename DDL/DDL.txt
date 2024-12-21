@@ -1,0 +1,71 @@
+create database kanjirodb;
+create schema kanjiro;
+
+create user kanjirouser
+password 'XXXXXXX';
+
+grant usage on schema kanjiro to kanjirouser;
+
+create table devices (
+  device_id char(22) primary key,
+  user_id char(22),
+  last_login timestamp not null,
+  secret_key char(32) not null,
+  created_at timestamp not null,
+  updated_at timestamp not null
+);
+
+create table users (
+  user_id char(22) primary key,
+  name varchar(32) not null,
+  login_id varchar(64),
+  password varchar(256),
+  created_at timestamp not null,
+  updated_at timestamp not null
+);
+
+-- ページの初回閲覧時に、(なければ)以下のCookieが発行される。
+-- AUTH_COOKIE  デバイスID : 現在時刻(YYYYMMDDHHMMSS)：<署名>
+-- 署名は、デバイスID : 現在時刻 : secret_keyをSHA256したもの。
+-- 同時にメモリにセッションを作る。
+
+-- 次回閲覧時、セッションがなくてCookieが来ていれば、
+-- ユーザIDからユーザを検索し、last_loginと署名を比較し、認証する。
+-- 認証したら、メモリにセッションを作ると同時に、
+-- usersのlast_login, secret_keyを書き換え、Set-Cookieする。
+
+create table events (
+  event_id char(22) primary key,
+  organizer_name varchar(64) not null,
+  organizer_id char(32) not null,
+  event_name varchar(128) not null,
+  description text not null,
+  fixed_date_id char(22),
+  is_secret_mode boolean not null,
+  is_auto_schedule boolean not null,
+  created_at timestamp not null,
+  updated_at timestamp not null
+);
+
+create table possible_dates (
+  possible_date_id char(22) primary key,
+  event_id char(22) not null,
+  name varchar(64) not null,
+  display_order integer,
+  deleted boolean not null,
+  created_at timestamp not null,
+  updated_at timestamp not null,
+  unique (event_id, name)
+);
+
+create table answers (
+  event_id char(22),
+  possible_date_id char(22),
+  user_id char(22),
+  answer integer not null,
+  is_protected boolean not null,
+  created_at timestamp not null,
+  updated_at timestamp not null,
+  primary key (event_id, possible_date_id, user_id)
+);
+

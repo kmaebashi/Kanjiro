@@ -31,7 +31,7 @@ public class ServiceInvokerImpl implements ServiceInvoker {
                 conn.commit();
             } catch (Exception ex) {
                 try {
-                    logger.error("Serviceでエラーが発生しました。\n" + ex.toString());
+                    logger.error("Serviceでエラーが発生しました。\n" + Util.exceptionToString(ex));
                     conn.rollback();
                     if (ex instanceof BadRequestException ex2) {
                         logger.info("Service ex2.." + ex2);
@@ -52,7 +52,7 @@ public class ServiceInvokerImpl implements ServiceInvoker {
             } catch (BadRequestException | NotFoundException ex) {
                 throw ex;
             } catch (Exception ex) {
-                logger.error("Serviceでエラーが発生しました。\n" + ex.toString());
+                logger.error("Serviceでエラーが発生しました。\n" + Util.exceptionToString(ex));
                 throw new InternalException("Serviceでエラーが発生しました。", ex);
             }
         }

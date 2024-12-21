@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="css/destyle.css">
 <link rel="stylesheet" href="css/kanjiro.css">
 <link rel="stylesheet" href="css/kanjiro_organizer.css">
+<script src="js/common.js"></script>
 <script src="js/organizer.js"></script>
 <script src="js/calendar.js"></script>
 <title>幹事郎 ―― Webでスケジュール調整</title>
@@ -22,7 +23,7 @@
       <p class="area-title">イベント情報</p>
       <p>幹事の名前(参加者向けの画面に表示します)、イベントの名前と説明を入力してください。</p>
       <p>幹事の名前(必須)</p>
-      <input type="text" id="event-name-input"/>
+      <input type="text" id="organizer-name-input"/>
       <p>イベント名(必須)</p>
       <input type="text" id="event-name-input"/>
       <p>イベント説明(任意)</p>
@@ -60,13 +61,13 @@
     <p class="area-title">設定</p>
     <p>
       <label>
-        <input type="checkbox" name="notshow" />
+        <input type="checkbox" id="is-secret-mode" />
         参加者の参加可能日を他の参加者に見せない
       </label>
     </p>
     <p>
       <label>
-        <input type="checkbox" name="notshow" />
+        <input type="checkbox" id="auto-schedule" />
         自動日程決定機能(うらみっこなしモード)を使用する
       </label>
     </p>

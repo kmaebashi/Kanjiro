@@ -1,14 +1,13 @@
 package com.kmaebashi.kanjiro.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import com.kmaebashi.kanjiro.common.SessionKey;
+
 import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dto.DeviceDto;
 import com.kmaebashi.kanjiro.util.Log;
+import com.kmaebashi.kanjiro.util.RandomIdGenerator;
 import com.kmaebashi.nctfw.ServiceContext;
-import jakarta.servlet.http.HttpSession;
 
-import com.kmaebashi.nctfw.RedirectResult;
 import com.kmaebashi.nctfw.ServiceInvoker;
 
 public class AuthenticationService {

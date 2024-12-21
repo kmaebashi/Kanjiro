@@ -1,4 +1,4 @@
-package com.kmaebashi.kanjiro.service;
+package com.kmaebashi.kanjiro.util;
 
 import java.security.SecureRandom;
 import java.util.Base64;

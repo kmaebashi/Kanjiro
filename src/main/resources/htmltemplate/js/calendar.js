@@ -4,7 +4,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _a, _Calendar_getLastNth, _Calendar_getFirstYoubi, _Calendar_fixLastDate;
+var _a, _Calendar_getLastNth, _Calendar_getFirstYoubi, _Calendar_fixLastDate, _Calendar_prevMonthExists, _Calendar_isFutureDate;
 class Calendar {
     constructor(targetElement, date) {
         this.datePickedCallback = null;
@@ -29,8 +29,11 @@ class Calendar {
         tableElem.setAttribute("id", "calendar-table");
         const headTr = document.createElement("tr");
         const leftArrowTd = document.createElement("td");
-        leftArrowTd.innerText = "≪";
-        leftArrowTd.classList.add("calendar-left-arrow");
+        if (__classPrivateFieldGet(_a, _a, "m", _Calendar_prevMonthExists).call(_a, this.currentDate)) {
+            leftArrowTd.innerText = "≪";
+            leftArrowTd.classList.add("calendar-left-arrow");
+            leftArrowTd.onclick = this.leftArrowClicked.bind(this);
+        }
         headTr.appendChild(leftArrowTd);
         const monthTd = document.createElement("td");
         monthTd.colSpan = 5;
@@ -42,9 +45,8 @@ class Calendar {
         rightArrowTd.innerText = "≫";
         rightArrowTd.classList.add("calendar-right-arrow");
         headTr.appendChild(rightArrowTd);
-        tableElem.appendChild(headTr);
-        leftArrowTd.onclick = this.leftArrowClicked.bind(this);
         rightArrowTd.onclick = this.rightArrowClicked.bind(this);
+        tableElem.appendChild(headTr);
         const youbiTr = document.createElement("tr");
         const youbiStrArray = ["日", "月", "火", "水", "木", "金", "土"];
         for (const youbiStr of youbiStrArray) {
@@ -68,17 +70,19 @@ class Calendar {
                     }
                     tdElem.innerText = "" + nth;
                     tdElem.setAttribute("data-date", nth.toString());
-                    tdElem.classList.add("calendar-date");
-                    if (youbi == 0) {
-                        tdElem.classList.add("calendar-sunday");
+                    if (__classPrivateFieldGet(_a, _a, "m", _Calendar_isFutureDate).call(_a, this.currentDate.getFullYear(), this.currentDate.getMonth(), nth)) {
+                        tdElem.classList.add("calendar-date");
+                        if (youbi == 0) {
+                            tdElem.classList.add("calendar-sunday");
+                        }
+                        if (youbi == 6) {
+                            tdElem.classList.add("calendar-saturday");
+                        }
+                        tdElem.onclick = this.dateClicked.bind(this);
                     }
-                    if (youbi == 6) {
-                        tdElem.classList.add("calendar-saturday");
+                    else {
+                        tdElem.classList.add("unclickable-date");
                     }
-                    if (nth == this.currentDate.getDate()) {
-                        tdElem.classList.add("calendar-target-date");
-                    }
-                    tdElem.onclick = this.dateClicked.bind(this);
                     nth++;
                     if (nth > lastNth) {
                         endFlag = true;
@@ -152,4 +156,17 @@ _a = Calendar, _Calendar_getLastNth = function _Calendar_getLastNth(date) {
         newDate = oldDate;
     }
     return newDate;
+}, _Calendar_prevMonthExists = function _Calendar_prevMonthExists(date) {
+    const nowDate = new Date();
+    return date.getFullYear() > nowDate.getFullYear()
+        || (date.getFullYear() == nowDate.getFullYear()
+            && date.getMonth() > nowDate.getMonth());
+}, _Calendar_isFutureDate = function _Calendar_isFutureDate(year, month, nth) {
+    const nowDate = new Date();
+    return year > nowDate.getFullYear()
+        || (year == nowDate.getFullYear()
+            && month > nowDate.getMonth())
+        || (year == nowDate.getFullYear()
+            && month == nowDate.getMonth()
+            && nth >= nowDate.getDate());
 };

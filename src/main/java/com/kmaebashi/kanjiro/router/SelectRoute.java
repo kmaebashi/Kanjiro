@@ -16,6 +16,8 @@ public class SelectRoute {
             } else if (path.equals("")) {
                 Log.info("Route.TOP selected");
                 return Route.TOP;
+            } else if (path.equals("api/posteventinfo")) {
+                return Route.POST_EVENT_INFO;
             }
         } catch (Exception ex) {
             throw new BadRequestException("クエリストリングが不正です。");

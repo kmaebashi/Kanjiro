@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +24,7 @@ class AuthenticationDbAccessTest {
     @BeforeAll
     static void connectDb() throws Exception {
         AuthenticationDbAccessTest.conn = KanjiroTestUtil.getConnection();
-        AuthenticationDbAccessTest.logger = new FileLogger("./log", "BlogPostDbAccessTest");
+        AuthenticationDbAccessTest.logger = new FileLogger("./log", "AuthenticationDbAccessTest");
         deleteAll();
     }
 
@@ -70,5 +69,23 @@ class AuthenticationDbAccessTest {
         assertEquals("upsertDeviceTest001___", dto2.deviceId);
         assertEquals("20241130152600", localDateTimeFormatter.format(dto2.lastLogin));
         assertEquals("upsertDeviceTest001Secret2______", dto2.secretKey);
+    }
+
+    @Test
+    void getUserIdByDeviceIdTest001() {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+
+        LocalDateTime lastLogin = LocalDateTime.of(2024, 11, 30, 14, 26, 00);
+        int count = AuthenticationDbAccess.upsertDevice(invoker, "getUsrIdByDevIdT001_01", lastLogin,
+                                                        "getUserIdByDeviceIdTest001");
+        count = AuthenticationDbAccess.upsertDevice(invoker, "getUsrIdByDevIdT001_02", lastLogin,
+                                                    "getUserIdByDeviceIdTest002");
+        count = AuthenticationDbAccess.setUserToDevice(invoker, "getUsrIdByDevIdT001_01", "getUsrIdByDevId001_U01");
+
+        String userId1 = AuthenticationDbAccess.getUserIdByDeviceId(invoker, "getUsrIdByDevIdT001_01");
+        assertEquals("getUsrIdByDevId001_U01", userId1);
+        String userId2 = AuthenticationDbAccess.getUserIdByDeviceId(invoker, "getUsrIdByDevIdT001_02");
+        assertNull(userId2);
     }
 }

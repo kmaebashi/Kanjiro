@@ -15,7 +15,7 @@ public class DbAccessInvokerImpl implements DbAccessInvoker {
         try {
             ret = logic.apply(this.context);
         } catch (Exception ex) {
-            this.context.getLogger().error("DBアクセスでエラーが発生しました。\n" + ex.toString());
+            this.context.getLogger().error("DBアクセスでエラーが発生しました。\n" +  Util.exceptionToString(ex));
             throw new InternalException("DBアクセスでエラーが発生しました。", ex);
         }
         return ret;
