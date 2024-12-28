@@ -53,7 +53,7 @@ class EventDbAccessTest {
         DbAccessContext context = new DbAccessContextImpl(conn, logger);
         DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
 
-        EventDbAccess.insertEvent(invoker, "INSERTTEST001", "ORGANIZER001", "なんとか会",
+        EventDbAccess.insertEvent(invoker, "INSERTTEST001", "幹事さん", "ORGANIZER001", "なんとか会",
                 "たのしみましょう", true, false);
 
         EventDto dto = EventDbAccess.getEvent(invoker, "INSERTTEST001");

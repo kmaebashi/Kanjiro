@@ -11,12 +11,13 @@ import java.util.HashMap;
 
 public class EventDbAccess {
     public static int insertEvent(DbAccessInvoker invoker,
-                                  String eventId, String organizerId, String eventName,
+                                  String eventId, String organizerName, String organizerId, String eventName,
                                   String description, boolean isSecretMode, boolean isAutoSchedule) {
         return invoker.invoke((context) -> {
             String sql = """
                     INSERT INTO EVENTS (
                       EVENT_ID,
+                      ORGANIZER_NAME,
                       ORGANIZER_ID,
                       EVENT_NAME,
                       DESCRIPTION,
@@ -26,6 +27,7 @@ public class EventDbAccess {
                       UPDATED_AT
                     ) VALUES (
                       :EVENT_ID,
+                      :ORGANIZER_NAME,
                       :ORGANIZER_ID,
                       :EVENT_NAME,
                       :DESCRIPTION,
@@ -39,6 +41,7 @@ public class EventDbAccess {
                     = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
             var params = new HashMap<String, Object>();
             params.put("EVENT_ID", eventId);
+            params.put("ORGANIZER_NAME", organizerName);
             params.put("ORGANIZER_ID", organizerId);
             params.put("EVENT_NAME", eventName);
             params.put("DESCRIPTION", description);

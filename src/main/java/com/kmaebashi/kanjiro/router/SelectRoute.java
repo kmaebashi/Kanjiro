@@ -16,6 +16,10 @@ public class SelectRoute {
             } else if (path.equals("")) {
                 Log.info("Route.TOP selected");
                 return Route.TOP;
+            } else if (path.equals("event")) {
+                return Route.EDIT_EVENT;
+            } else if (path.equals("guest")) {
+                return Route.GUEST;
             } else if (path.equals("api/posteventinfo")) {
                 return Route.POST_EVENT_INFO;
             }

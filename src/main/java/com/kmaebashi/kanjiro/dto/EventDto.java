@@ -8,6 +8,9 @@ public class EventDto {
     @TableColumn("EVENT_ID")
     public String eventId;
 
+    @TableColumn("ORGANIZER_NAME")
+    public String organizerName;
+
     @TableColumn("ORGANIZER_ID")
     public String organizierId;
 

@@ -7,6 +7,7 @@ import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.EventDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.PossibleDateDbAccess;
 import com.kmaebashi.kanjiro.dto.EventDto;
+import com.kmaebashi.kanjiro.dto.PossibleDateDto;
 import com.kmaebashi.kanjiro.dto.UserDto;
 import com.kmaebashi.kanjiro.util.CsrfUtil;
 import com.kmaebashi.kanjiro.util.RandomIdGenerator;
@@ -20,6 +21,8 @@ import org.jsoup.nodes.Element;
 import com.kmaebashi.simplelogger.Logger;
 
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class OrganizerPageService {
     private OrganizerPageService() {}
@@ -30,6 +33,22 @@ public class OrganizerPageService {
             Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
             renderBlankPage(doc);
             renderOrganizerName(context, doc, deviceId);
+
+            DocumentResult ret = new DocumentResult(doc);
+            CsrfUtil.addCsrfToken(ret, nextCsrfToken);
+
+            return ret;
+        });
+    }
+
+    public static DocumentResult showEditEventPage(ServiceInvoker invoker, String eventId, String deviceId,
+                                                   String nextCsrfToken) {
+        return invoker.invoke((context) -> {
+            Path htmlPath = context.getHtmlTemplateDirectory().resolve("edit_event.html");
+            Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
+            renderBlankPage(doc);
+            renderOrganizerName(context, doc, deviceId);
+            renderEventInfo(context, doc, eventId);
 
             DocumentResult ret = new DocumentResult(doc);
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
@@ -49,6 +68,24 @@ public class OrganizerPageService {
             Element organizerInputElem = doc.getElementById("organizer-name-input");
             organizerInputElem.attr("value", userDto.name);
         }
+    }
+
+    private static void renderEventInfo(ServiceContext context, Document doc, String eventId) {
+        EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
+
+        Element eventNameInputElem = doc.getElementById("event-name-input");
+        eventNameInputElem.attr("value", eventDto.eventName);
+        Element eventDescriptionElem = doc.getElementById("event-description");
+        eventDescriptionElem.text(eventDto.description);
+
+        List<PossibleDateDto> dtoList
+                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventId);
+        StringBuilder scheduleTextSb = new StringBuilder();
+        for (PossibleDateDto dto: dtoList) {
+            scheduleTextSb.append(dto.name + "\r\n");
+        }
+        Element scheduleTextElem = doc.getElementById("schedule-textarea");
+        scheduleTextElem.text(scheduleTextSb.toString());
     }
 
     public static JsonResult mergeEventInfo(ServiceInvoker invoker, String deviceId, EventInfo eventInfo) {
@@ -89,11 +126,14 @@ public class OrganizerPageService {
         });
     }
 
+    private static DateTimeFormatter lastUpdateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+
     static PostEventInfoResult createNewEvent(ServiceContext context, String deviceId, EventInfo eventInfo) {
         String userId = DbUtil.getOrCreateUser(context, deviceId, eventInfo.organizerName);
         String eventId = UuidUtil.getUniqueId();
         EventDbAccess.insertEvent(context.getDbAccessInvoker(),
-                                  eventId, userId, eventInfo.eventName, eventInfo.eventDescription,
+                                  eventId, eventInfo.organizerName, userId,
+                                  eventInfo.eventName, eventInfo.eventDescription,
                                   eventInfo.isSecretMode, eventInfo.isAutoSchedule);
 
         int displayOrder = 1;
@@ -103,7 +143,10 @@ public class OrganizerPageService {
                                                 possibleDateId, eventId, possibleDateStr, displayOrder);
             displayOrder++;
         }
-        return null;
+        EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
+        String lastUpdateAt = lastUpdateFormatter.format(eventDto.updatedAt);
+
+        return new PostEventInfoResult(eventId, true, null, lastUpdateAt);
     }
 
     static String checkExistingEvent(ServiceContext context, EventInfo eventInfo, String[] updatedAtBuf) {

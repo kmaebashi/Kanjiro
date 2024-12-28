@@ -6,16 +6,18 @@
 <link rel="stylesheet" href="css/destyle.css">
 <link rel="stylesheet" href="css/kanjiro.css">
 <link rel="stylesheet" href="css/kanjiro_guest.css">
+<script src="js/guest.js"></script>
 <title>幹事郎 ―― Webでスケジュール調整</title>
 </head>
 <body>
+<script id="server-side-include-script"></script>
 <header>
   <section>
     <h1><a id="page-title" class="page-title" href="#">幹事郎</a></h1>
   </section>
 </header>
 <div id="container">
-<h2>なんとかさん送別会</h2>
+<h2 id="event-name">なんとかさん送別会</h2>
 <h3>イベントの内容</h3>
 <p id="organizer-name-line"><span class="title">幹事</span><span id="organizer-name">幹事 二郎</span></p>
 <p id="event-description">
@@ -30,7 +32,7 @@
 </p>
 <h3>回答いただいた方</h3>
 <p>※回答順です</p>
-<dl>
+<dl id="message-list">
 <dt>1.幹事 二郎</dt>
 <dd>
 よろしくお願いいたします。

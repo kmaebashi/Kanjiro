@@ -11,6 +11,8 @@ import java.util.ResourceBundle;
 import com.kmaebashi.kanjiro.common.CookieKey;
 import com.kmaebashi.kanjiro.common.SessionKey;
 import com.kmaebashi.kanjiro.controller.AuthenticateController;
+import com.kmaebashi.kanjiro.controller.EditEventController;
+import com.kmaebashi.kanjiro.controller.GuestPageController;
 import com.kmaebashi.kanjiro.controller.OrganizerController;
 import com.kmaebashi.kanjiro.controller.TopPageController;
 import com.kmaebashi.kanjiro.controller.Util;
@@ -37,7 +39,6 @@ public class KanjiroRouter extends Router {
     }
 
     public RoutingResult doRouting(String path, ControllerInvoker invoker, HttpServletRequest request) {
-        RoutingResult result = null;
         HttpSession session = request.getSession(true);
         String deviceId = (String)session.getAttribute(SessionKey.DEVICE_ID);
         String nextCsrfToken;
@@ -60,13 +61,15 @@ public class KanjiroRouter extends Router {
         }
         if (request.getMethod().equals("GET")) {
             if (route == Route.TOP) {
-                result = TopPageController.showPage(invoker, deviceId, nextCsrfToken);
-                return result;
+                return TopPageController.showPage(invoker, deviceId, nextCsrfToken);
+            } else if (route == Route.EDIT_EVENT) {
+                return EditEventController.showPage(invoker, deviceId, nextCsrfToken);
+            } else if (route == Route.GUEST) {
+                return GuestPageController.showPage(invoker, deviceId, nextCsrfToken);
             }
         } else if (request.getMethod().equals("POST")) {
             if (route == Route.POST_EVENT_INFO) {
-                result = OrganizerController.postEventInfo(invoker, deviceId);
-                return result;
+                return OrganizerController.postEventInfo(invoker, deviceId);
             }
         }
 
