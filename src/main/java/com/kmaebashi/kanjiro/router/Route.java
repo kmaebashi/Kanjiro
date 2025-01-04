@@ -6,5 +6,6 @@ public enum Route {
     EDIT_EVENT,
     GUEST,
     POST_EVENT_INFO,
+    POST_ANSWER_INFO,
     NO_ROUTE
 }

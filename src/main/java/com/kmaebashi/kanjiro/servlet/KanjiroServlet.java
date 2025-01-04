@@ -15,9 +15,9 @@ public class KanjiroServlet extends HttpServlet {
     private Logger logger;
     public void init() {
         ResourceBundle rb = ResourceBundle.getBundle("application");
-        String logDirectory = rb.getString("blog.log-directory");
+        String logDirectory = rb.getString("kanjiro.log-directory");
         try {
-            this.logger = new FileLogger(logDirectory, "BlogLog");
+            this.logger = new FileLogger(logDirectory, "KanjiroLog");
         } catch (IOException ex) {
             throw new InternalException("ログファイルの作成に失敗しました。", ex);
         }

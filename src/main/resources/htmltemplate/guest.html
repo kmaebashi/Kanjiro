@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="css/destyle.css">
 <link rel="stylesheet" href="css/kanjiro.css">
 <link rel="stylesheet" href="css/kanjiro_guest.css">
+<script src="js/common.js"></script>
 <script src="js/guest.js"></script>
 <title>幹事郎 ―― Webでスケジュール調整</title>
 </head>
@@ -75,24 +76,22 @@
 <h3>日程候補</h3>
 <table id="possible-dates-table">
   <tr>
-    <th>日程</th><th>○</th><th>△</th><th>×</th><th>幹事 二郎</th><th>田中</th><th>山本</th><th>ふんどし仮面</th><th>凍てつく道化師青井</th><th>☆煉獄☆</th><th>響童子</th><th>✝幻影～phantom～✝</th><th>卍BLACKGOD卍</th><th>kmaebashi</th>
+    <th class="date-th">日程</th><th class="count-th">○</th><th class="count-th">△</th><th class="count-th">×</th><th>幹事 二郎</th><th>田中</th><th>山本</th><th>ふんどし仮面</th><th>凍てつく道化師青井</th><th>☆煉獄☆</th><th>響童子</th><th>✝幻影～phantom～✝</th><th>卍BLACKGOD卍</th><th>kmaebashi</th>
   </tr>
   <tr>
-    <th>11/09(土)</th><td>2人</td><td>2人</td><td>6人</td><td>○</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td><td>×</td><td>×</td><td>×</td>
+    <th>11/09(土)</th><td class="count">2人</td><td class="count">2人</td><td class="count">6人</td><td>○</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td><td>×</td><td>×</td><td>×</td>
   </tr>
   <tr>
-    <th>11/10(日)</th><td>6人</td><td>1人</td><td>3人</td><td>○</td><td>○</td><td>×</td><td>×</td><td>△</td><td>○</td><td>○</td><td>○</td><td>×</td><td>○</td>
+    <th>11/10(日)</th><td class="count">6人</td><td class="count">1人</td><td class="count">3人</td><td>○</td><td>○</td><td>×</td><td>×</td><td>△</td><td>○</td><td>○</td><td>○</td><td>×</td><td>○</td>
   </tr>
   <tr>
-    <th>11/16(土)</th><td>5人</td><td>2人</td><td>3人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>○</td><td>△</td><td>△</td><td>○</td><td>○</td><td>○</td>
+    <th>11/16(土)</th><td class="count">5人</td><td class="count">2人</td><td class="count">3人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>○</td><td>△</td><td>△</td><td>○</td><td>○</td><td>○</td>
   </tr>
   <tr>
-    <th>11/17(日)</th><td>2人</td><td>2人</td><td>6人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td>
+    <th>11/17(日)</th><td class="count">2人</td><td class="count">2人</td><td class="count">6人</td><td>×</td><td>×</td><td>○</td><td>×</td><td>△</td><td>×</td><td>○</td><td>△</td><td>×</td><td>×</td>
   </tr>
 </table>
-<div class="reply-button-div">
-  <button type="button" class="reply-button-class">回答する</button>
-</div>
+<h3>参加可能な日程を回答する</h3>
 <div id="input-reply-container">
   <div id="input-reply-div">
     <p>あなたのお名前</p>
@@ -100,8 +99,8 @@
     <p>日程情報</p>
     <table id="reply-table">
       <tr>
-        <td>11/09(土)</td>
-        <td>
+        <td class="possible-date-name">11/09(土)</td>
+        <td class="answer-radio">
           <label>
             <input type="radio" name="date0" value="1"/>○
           </label>
@@ -114,8 +113,8 @@
         </td>
       </tr>
       <tr>
-        <td>11/10(日)</td>
-        <td>
+        <td class="possible-date-name">11/10(日)</td>
+        <td class="answer-radio">
           <label>
             <input type="radio" name="date1" value="1"/>○
           </label>
@@ -128,8 +127,8 @@
         </td>
       </tr>
       <tr>
-        <td>11/16(土)</td>
-        <td>
+        <td class="possible-date-name">11/16(土)</td>
+        <td class="answer-radio">
           <label>
             <input type="radio" name="date2" value="1"/>○
           </label>
@@ -142,8 +141,8 @@
         </td>
       </tr>
       <tr>
-        <td>11/17(日)</td>
-        <td>
+        <td class="possible-date-name">11/17(日)</td>
+        <td class="answer-radio">
           <label>
             <input type="radio" name="date3" value="1"/>○
           </label>
@@ -157,11 +156,10 @@
       </tr>
     </table>
     <p>コメント</p>
-    <textarea id="comment-textarea">
-    </textarea>
+    <textarea id="comment-textarea"></textarea>
     <p>
       <label>
-        <input type="checkbox" name=""/>
+        <input type="checkbox" id="protected-check"/>
         他人による変更を禁止する
       </label><br>
       <span class="input-reply-comment">※自分でも、他の端末から変更できなくなります</span>
@@ -169,8 +167,7 @@
   </div>
 </div>
 <div class="reply-button-div">
-  <button type="button" class="reply-button-class">回答を保存する</button>
-</div>
+  <button type="button" id="reply-button">回答する</button>
 </div>
 </div>
 <footer>

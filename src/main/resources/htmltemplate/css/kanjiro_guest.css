@@ -12,6 +12,10 @@
     text-align: left;
     display: inline-block;
   }
+
+  #possible-dates-table th.date-th {
+    width: 10em;
+  }
 }
 
 @media (max-width: 768px) {
@@ -74,9 +78,9 @@ dd {
 }
 
 #possible-dates-table {
-  width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
+  margin-bottom: 10px;
 }
 
 table th, table td {
@@ -90,13 +94,23 @@ table th {
   background-color: whitesmoke;
 }
 
+table th.count-th {
+  background-color: #f0f0f0;
+  width: 3em;
+}
+
+table td.count {
+  background-color: #ffffee;
+}
+
+
 div.reply-button-div {
   height: 100px;
   padding-top: 10px;
   text-align: center;
 }
 
-button.reply-button-class {
+button#reply-button {
   width: 60%;
   height: 60px;
   text-align: center;

@@ -6,6 +6,7 @@ public class EventInfo {
     public String eventName;
     public String eventDescription;
     public String[] scheduleArray;
+    public String appendTime;
     public boolean isSecretMode;
     public boolean isAutoSchedule;
     public boolean registerForce;

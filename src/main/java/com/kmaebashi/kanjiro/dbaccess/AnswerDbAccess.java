@@ -39,6 +39,33 @@ public class AnswerDbAccess {
         });
     }
 
+    public static AnswerDto getAnswer(DbAccessInvoker invoker, String eventId, String userId) {
+        return invoker.invoke((context) -> {
+            String sql = """
+                    SELECT
+                      USER_ID,
+                      USER_NAME,
+                      MESSAGE,
+                      IS_PROTECTED
+                    FROM ANSWERS
+                    WHERE
+                      EVENT_ID = :EVENT_ID
+                      AND USER_ID = :USER_ID
+                    ORDER BY CREATED_AT
+                    """;
+
+            NamedParameterPreparedStatement npps
+                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
+            var params = new HashMap<String, Object>();
+            params.put("EVENT_ID", eventId);
+            params.put("USER_ID", userId);
+            npps.setParameters(params);
+            ResultSet rs = npps.getPreparedStatement().executeQuery();
+            AnswerDto dto = ResultSetMapper.toDto(rs, AnswerDto.class);
+
+            return dto;
+        });
+    }
     public static List<DateAnswerDto> getDateAnswers(DbAccessInvoker invoker, String eventId) {
         return invoker.invoke((context) -> {
             String sql = """
@@ -101,6 +128,49 @@ public class AnswerDbAccess {
         });
     }
 
+    public static int upsertAnswer(DbAccessInvoker invoker, String eventId, String userId, String userName,
+                                   String message, boolean isProtected) {
+        return invoker.invoke((context) -> {
+            String sql = """
+                    INSERT INTO ANSWERS (
+                      EVENT_ID,
+                      USER_ID,
+                      USER_NAME,
+                      MESSAGE,
+                      IS_PROTECTED,
+                      CREATED_AT,
+                      UPDATED_AT
+                    ) VALUES (
+                      :EVENT_ID,
+                      :USER_ID,
+                      :USER_NAME,
+                      :MESSAGE,
+                      :IS_PROTECTED,
+                      now(),
+                      now()
+                    ) ON CONFLICT (EVENT_ID, USER_ID)
+                    DO UPDATE SET
+                      USER_NAME = EXCLUDED.USER_NAME,
+                      MESSAGE = EXCLUDED.MESSAGE,
+                      IS_PROTECTED = EXCLUDED.IS_PROTECTED,
+                      UPDATED_AT = EXCLUDED.UPDATED_AT
+                    """;
+            NamedParameterPreparedStatement npps
+                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
+            var params = new HashMap<String, Object>();
+            params.put("EVENT_ID", eventId);
+            params.put("USER_ID", userId);
+            params.put("USER_NAME", userName);
+            params.put("MESSAGE", message);
+            params.put("IS_PROTECTED", isProtected);
+
+            npps.setParameters(params);
+            int result = npps.getPreparedStatement().executeUpdate();
+
+            return result;
+        });
+    }
+
     public static int insertDateAnswer(DbAccessInvoker invoker, String eventId, String userId,
                                        String possibleDateId, int answer) {
         return invoker.invoke((context) -> {
@@ -124,6 +194,48 @@ public class AnswerDbAccess {
             params.put("USER_ID", userId);
             params.put("POSSIBLE_DATE_ID", possibleDateId);
             params.put("ANSWER", answer);
+
+            npps.setParameters(params);
+            int result = npps.getPreparedStatement().executeUpdate();
+
+            return result;
+        });
+    }
+
+    public static int deleteAnswer(DbAccessInvoker invoker, String eventId, String userId) {
+        return invoker.invoke((context) -> {
+            String sql = """
+                    DELETE FROM ANSWERS
+                    WHERE
+                      EVENT_ID = :EVENT_ID
+                      AND USER_ID = :USER_ID
+                    """;
+            NamedParameterPreparedStatement npps
+                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
+            var params = new HashMap<String, Object>();
+            params.put("EVENT_ID", eventId);
+            params.put("USER_ID", userId);
+
+            npps.setParameters(params);
+            int result = npps.getPreparedStatement().executeUpdate();
+
+            return result;
+        });
+    }
+
+    public static int deleteDateAnswer(DbAccessInvoker invoker, String eventId, String userId) {
+        return invoker.invoke((context) -> {
+            String sql = """
+                    DELETE FROM DATE_ANSWERS
+                    WHERE
+                      EVENT_ID = :EVENT_ID
+                      AND USER_ID = :USER_ID
+                    """;
+            NamedParameterPreparedStatement npps
+                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
+            var params = new HashMap<String, Object>();
+            params.put("EVENT_ID", eventId);
+            params.put("USER_ID", userId);
 
             npps.setParameters(params);
             int result = npps.getPreparedStatement().executeUpdate();

@@ -20,6 +20,9 @@ public class EventDto {
     @TableColumn("DESCRIPTION")
     public String description;
 
+    @TableColumn("SCHEDULE_APPEND_TIME")
+    public String appendTime;
+
     @TableColumn("FIXED_DATE_ID")
     public String fixedDateId;
 

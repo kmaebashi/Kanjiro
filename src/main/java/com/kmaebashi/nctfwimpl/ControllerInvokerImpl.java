@@ -19,10 +19,10 @@ public class ControllerInvokerImpl implements ControllerInvoker {
         try {
             ret = logic.apply(this.context);
         } catch (BadRequestException | NotFoundException ex) {
-            this.context.getLogger().info("Controller ex.." + ex);
+            this.context.getLogger().info("Controller ex.." + Util.exceptionToString(ex));
             throw ex;
         } catch (Exception ex) {
-            this.context.getLogger().error("コントローラーの呼び出しでエラーが発生しました。\n" + ex.toString());
+            this.context.getLogger().error("コントローラーの呼び出しでエラーが発生しました。\n" + Util.exceptionToString(ex));
             throw new InternalException("コントローラーの呼び出しでエラーが発生しました。", ex);
         }
         return ret;

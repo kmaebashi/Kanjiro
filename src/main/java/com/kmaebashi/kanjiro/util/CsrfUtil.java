@@ -16,11 +16,4 @@ public class CsrfUtil {
         metaElem.attr("content", token);
         doc.head().appendChild(metaElem);
     }
-
-    public static boolean checkCsrfToken(HttpServletRequest request) {
-        String headerToken = request.getHeader("X-Csrf-Token");
-        String cookieToken = Util.searchCookie(request, CookieKey.CSRF_TOKEN).getValue();
-
-        return headerToken.equals(cookieToken);
-    }
 }

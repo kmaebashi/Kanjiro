@@ -13,7 +13,7 @@ window.onload = function (e) {
     const calendar = new Calendar(calendarElem, new Date());
     calendar.render();
     calendar.setDatePickedCallback(datePickedCallback);
-    document.getElementById("create-event-button").onclick = createEventButtonClicked;
+    document.getElementById("apply-button").onclick = createEventButtonClicked;
 };
 function createEventButtonClicked(e) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -28,6 +28,7 @@ function createEventButtonClicked(e) {
             return;
         }
         const eventDescription = document.getElementById("event-description").value;
+        const appendTime = document.getElementById("schedule-append-time").value;
         const scheduleText = document.getElementById("schedule-textarea").value;
         const isSecretMode = document.getElementById("is-secret-mode").checked;
         const isAutoSchedule = document.getElementById("auto-schedule").checked;
@@ -42,6 +43,7 @@ function createEventButtonClicked(e) {
             eventName: eventName,
             eventDescription: eventDescription,
             scheduleArray: scheduleArrayRet[0],
+            appendTime: appendTime,
             isSecretMode: isSecretMode,
             isAutoSchedule: isAutoSchedule,
             registerForce: false,

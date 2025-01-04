@@ -14,8 +14,11 @@ public class EditEventController {
             if (eventId == null) {
                 throw new BadRequestException("不正なURLです。");
             }
+            String url = context.getServletRequest().getRequestURL().toString();
+            url = url.replaceFirst("\\.do$", "");
+
             return OrganizerPageService.showEditEventPage(context.getServiceInvoker(), eventId, deviceId,
-                                                          nextCsrfToken);
+                                                          nextCsrfToken, url);
         });
     }
 }

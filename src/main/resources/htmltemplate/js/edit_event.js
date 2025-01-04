@@ -13,7 +13,7 @@ window.onload = function (e) {
     const calendar = new Calendar(calendarElem, new Date());
     calendar.render();
     calendar.setDatePickedCallback(datePickedCallback);
-    document.getElementById("edit-event-button").onclick = editEventButtonClicked;
+    document.getElementById("apply-button").onclick = editEventButtonClicked;
 };
 function editEventButtonClicked(e) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -27,7 +27,10 @@ function editEventButtonClicked(e) {
             alert("イベント名は必須です。");
             return;
         }
+        const queryParams = new URLSearchParams(window.location.search);
+        const eventId = queryParams.get("eventId");
         const eventDescription = document.getElementById("event-description").value;
+        const appendTime = document.getElementById("schedule-append-time").value;
         const scheduleText = document.getElementById("schedule-textarea").value;
         const isSecretMode = document.getElementById("is-secret-mode").checked;
         const isAutoSchedule = document.getElementById("auto-schedule").checked;
@@ -37,11 +40,12 @@ function editEventButtonClicked(e) {
             return;
         }
         var eventInfo = {
-            eventId: null,
+            eventId: eventId,
             organizerName: organizerName,
             eventName: eventName,
             eventDescription: eventDescription,
             scheduleArray: scheduleArrayRet[0],
+            appendTime: appendTime,
             isSecretMode: isSecretMode,
             isAutoSchedule: isAutoSchedule,
             registerForce: false,

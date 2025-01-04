@@ -73,12 +73,17 @@
   }
 }
 
+#container-event-url {
+  background-color: #ffffff;
+  padding: 5px;
+}
+
 #container-settings {
   background-color: #ffffff;
   padding: 5px;
 }
 
-#create-button-div {
+#apply-button-div {
   height: 100px;
   padding-top: 10px;
   text-align: center;
@@ -175,7 +180,7 @@ td.unclickable-date {
   background-color: #888888;
 }
 
-#create-event-button {
+#apply-button {
   width: 60%;
   height: 60px;
   text-align: center;
@@ -187,6 +192,6 @@ td.unclickable-date {
   border-radius: 5px;
 }
 
-#create-event-button:hover {
+#apply-button:hover {
   background-color: #eda975;
 }

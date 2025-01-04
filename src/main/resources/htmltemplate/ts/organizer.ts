@@ -21,6 +21,7 @@ type EventInfo = {
   eventName: string;
   eventDescription: string;
   scheduleArray: string[];
+  appendTime: string;
   isSecretMode: boolean;
   isAutoSchedule: boolean;
   registerForce: boolean;

@@ -48,6 +48,7 @@ class GuestPageServiceTest {
 
         KanjiroTestUtil.deleteAll(context, "EVENTS");
         KanjiroTestUtil.deleteAll(context, "USERS");
+        KanjiroTestUtil.deleteAll(context, "DEVICES");
         KanjiroTestUtil.deleteAll(context, "POSSIBLE_DATES");
         KanjiroTestUtil.deleteAll(context, "ANSWERS");
         KanjiroTestUtil.deleteAll(context, "DATE_ANSWERS");
@@ -59,16 +60,16 @@ class GuestPageServiceTest {
 
         EventDbAccess.insertEvent(invoker, "GuestPageSTestEvent001", "幹事太郎", "GuestPageSTestOUser001",
                                   "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。",
-                                  false, false);
+                                  "19:00～", false, false);
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser001", "幹事太郎2");
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser002", "ゲスト1");
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser003", "ゲスト2");
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser004", "ゲスト3");
-        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD001", "GuestPageSTestEvent001", "10/01(月)", 1);
-        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD002", "GuestPageSTestEvent001", "10/02(火)", 2);
-        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD003", "GuestPageSTestEvent001", "10/03(水)", 3);
-        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD004", "GuestPageSTestEvent001", "10/04(木)", 4);
-        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD005", "GuestPageSTestEvent001", "10/05(金)", 5);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD001____", "GuestPageSTestEvent001", "10/01(月)", 1);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD002____", "GuestPageSTestEvent001", "10/02(火)", 2);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD003____", "GuestPageSTestEvent001", "10/03(水)", 3);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD004____", "GuestPageSTestEvent001", "10/04(木)", 4);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD005____", "GuestPageSTestEvent001", "10/05(金)", 5);
         AnswerDbAccess.insertAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "幹事太郎3",
                                     "幹事太郎3です。よろしくお願いいたします。", true);
         AnswerDbAccess.insertAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "ゲスト1_",
@@ -77,26 +78,26 @@ class GuestPageServiceTest {
                 "ゲスト2_です。よろしくお願いいたします。", false);
         AnswerDbAccess.insertAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "ゲスト3_",
                 "ゲスト3_です。よろしくお願いいたします。", false);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD001", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD002", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD003", 3);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD004", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD005", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD001", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD002", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD003", 3);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD004", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD005", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD001", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD002", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD003", 3);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD004", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD005", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD001", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD002", 2);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD003", 3);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD004", 1);
-        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD005", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD001____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD002____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD003____", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD004____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser001", "GuestPageTestPD005____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD001____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD002____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD003____", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD004____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser002", "GuestPageTestPD005____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD001____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD002____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD003____", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD004____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser003", "GuestPageTestPD005____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD001____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD002____", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD003____", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD004____", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, "GuestPageSTestEvent001", "GuestPageSTestOUser004", "GuestPageTestPD005____", 2);
     }
 
     @AfterAll
@@ -113,7 +114,7 @@ class GuestPageServiceTest {
                 logger);
         ServiceInvoker si = new ServiceInvokerImpl(sc);
 
-        DocumentResult dr = GuestPageService.showPage(si, "GuestPageSTestEvent001", "dummyDevice", "dummyCsrfToken");
+        DocumentResult dr = GuestPageService.showPage(si, "GuestPageSTestEvent001", null, "dummyDevice", "dummyCsrfToken");
         String html = dr.getDocument().html();
     }
 
@@ -127,7 +128,8 @@ class GuestPageServiceTest {
 
         String eventId = "GuestPageSTestEvent001";
         List<AnswerDto> answerDtoList = AnswerDbAccess.getAnswers(sc.getDbAccessInvoker(), eventId);
-        PossibleDatesTable pdt = GuestPageService.getPossibleDatesTable(sc, eventId, answerDtoList);
+        GuestPageService.PossibleDatesInfo pdi = GuestPageService.getPossibleDatesTable(sc, eventId, answerDtoList);
+        PossibleDatesTable pdt = pdi.pdt();
 
         assertEquals(5, pdt.possibleDateNames.length);
         assertEquals("10/01(月)", pdt.possibleDateNames[0]);

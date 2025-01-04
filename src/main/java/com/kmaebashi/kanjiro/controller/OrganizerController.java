@@ -3,6 +3,7 @@ package com.kmaebashi.kanjiro.controller;
 import com.kmaebashi.jsonparser.ClassMapper;
 import com.kmaebashi.jsonparser.JsonElement;
 import com.kmaebashi.jsonparser.JsonParser;
+import com.kmaebashi.kanjiro.common.HeaderKey;
 import com.kmaebashi.kanjiro.controller.data.EventInfo;
 import com.kmaebashi.kanjiro.service.OrganizerPageService;
 import com.kmaebashi.kanjiro.util.CsrfUtil;
@@ -14,10 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 public class OrganizerController {
     private OrganizerController() {}
 
-    public static RoutingResult postEventInfo(ControllerInvoker invoker, String deviceId) {
+    public static RoutingResult postEventInfo(ControllerInvoker invoker, String deviceId, String lastCsrfToken) {
         return invoker.invoke((context) -> {
             HttpServletRequest request = context.getServletRequest();
-            if (!CsrfUtil.checkCsrfToken(request)) {
+            String headerToken = request.getHeader(HeaderKey.CSRF_TOKEN);
+            if (headerToken == null || !headerToken.equals(lastCsrfToken)) {
                 throw new BadRequestException("CSRFトークン不正", true);
             }
             try (JsonParser jsonParser = JsonParser.newInstance(request.getReader())) {

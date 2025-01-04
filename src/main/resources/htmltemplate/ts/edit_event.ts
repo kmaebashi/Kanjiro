@@ -4,7 +4,7 @@ window.onload = function(e: Event): void {
   calendar.render();
   calendar.setDatePickedCallback(datePickedCallback);
 
-  document.getElementById("edit-event-button")!.onclick = editEventButtonClicked;
+  document.getElementById("apply-button")!.onclick = editEventButtonClicked;
 };
 
 async function editEventButtonClicked(e: Event) {
@@ -20,8 +20,12 @@ async function editEventButtonClicked(e: Event) {
     alert("イベント名は必須です。");
     return;
   }
+  const queryParams = new URLSearchParams(window.location.search);
+  const eventId: string = queryParams.get("eventId")!;
   const eventDescription: string
     = (document.getElementById("event-description")! as HTMLInputElement).value;
+  const appendTime: string
+    = (document.getElementById("schedule-append-time")! as HTMLInputElement).value;
   const scheduleText: string
     = (document.getElementById("schedule-textarea")! as HTMLInputElement).value;
   const isSecretMode: boolean
@@ -36,11 +40,12 @@ async function editEventButtonClicked(e: Event) {
   }
 
   var eventInfo: EventInfo = {
-    eventId: null,
+    eventId: eventId,
     organizerName: organizerName,
     eventName: eventName,
     eventDescription: eventDescription,
     scheduleArray: scheduleArrayRet[0],
+    appendTime: appendTime,
     isSecretMode: isSecretMode,
     isAutoSchedule: isAutoSchedule,
     registerForce: false,

@@ -24,6 +24,13 @@ create table users (
   updated_at timestamp not null
 );
 
+create table csrf_tokens (
+  device_id char(22) primary key,
+  csrf_token char(32) not null,
+  created_at timestamp not null,
+  updated_at timestamp not null
+);
+
 -- ページの初回閲覧時に、(なければ)以下のCookieが発行される。
 -- AUTH_COOKIE  デバイスID : 現在時刻(YYYYMMDDHHMMSS)：<署名>
 -- 署名は、デバイスID : 現在時刻 : secret_keyをSHA256したもの。
@@ -41,6 +48,7 @@ create table events (
   event_name varchar(128) not null,
   description text not null,
   fixed_date_id char(22),
+  schedule_append_time varchar(64) not null,
   is_secret_mode boolean not null,
   is_auto_schedule boolean not null,
   created_at timestamp not null,

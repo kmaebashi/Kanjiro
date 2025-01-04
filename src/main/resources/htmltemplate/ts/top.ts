@@ -4,7 +4,7 @@ window.onload = function(e: Event): void {
   calendar.render();
   calendar.setDatePickedCallback(datePickedCallback);
 
-  document.getElementById("create-event-button")!.onclick = createEventButtonClicked;
+  document.getElementById("apply-button")!.onclick = createEventButtonClicked;
 };
 
 async function createEventButtonClicked(e: Event) {
@@ -22,6 +22,8 @@ async function createEventButtonClicked(e: Event) {
   }
   const eventDescription: string
     = (document.getElementById("event-description")! as HTMLInputElement).value;
+  const appendTime: string
+    = (document.getElementById("schedule-append-time")! as HTMLInputElement).value;
   const scheduleText: string
     = (document.getElementById("schedule-textarea")! as HTMLInputElement).value;
   const isSecretMode: boolean
@@ -41,6 +43,7 @@ async function createEventButtonClicked(e: Event) {
     eventName: eventName,
     eventDescription: eventDescription,
     scheduleArray: scheduleArrayRet[0],
+    appendTime: appendTime,
     isSecretMode: isSecretMode,
     isAutoSchedule: isAutoSchedule,
     registerForce: false,

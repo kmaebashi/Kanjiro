@@ -22,6 +22,8 @@ public class SelectRoute {
                 return Route.GUEST;
             } else if (path.equals("api/posteventinfo")) {
                 return Route.POST_EVENT_INFO;
+            } else if (path.equals("api/postanswerinfo")) {
+                return Route.POST_ANSWER_INFO;
             }
         } catch (Exception ex) {
             throw new BadRequestException("クエリストリングが不正です。");
