@@ -13,9 +13,11 @@ public class CsrfTokenController {
         return invoker.invoke((context) -> {
             HttpSession session = context.getServletRequest().getSession();
             String csrfToken = (String)session.getAttribute(SessionKey.CSRF_TOKEN);
+            context.getLogger().info("session nextCsrfToken.." + csrfToken);
 
             if (csrfToken == null) {
                 csrfToken = CsrfTokenService.getNextCsrfToken(context.getServiceInvoker(), deviceId);
+                context.getLogger().info("Service#getNextCsrfToken.." + csrfToken);
                 session.setAttribute(SessionKey.CSRF_TOKEN, csrfToken);
             }
             csrfTokenBuf[0] = csrfToken;
@@ -27,11 +29,12 @@ public class CsrfTokenController {
         return invoker.invoke((context) -> {
             HttpSession session = context.getServletRequest().getSession();
             String csrfToken = (String)session.getAttribute(SessionKey.CSRF_TOKEN);
+            context.getLogger().info("session lastCsrfToken.." + csrfToken);
 
             if (csrfToken == null) {
                 csrfToken = CsrfTokenService.getLastCsrfToken(context.getServiceInvoker(), deviceId);
-                String newCsrfToken = CsrfTokenService.getNextCsrfToken(context.getServiceInvoker(), deviceId);
-                session.setAttribute(SessionKey.CSRF_TOKEN, newCsrfToken);
+                context.getLogger().info("Service#getLastCsrfToken.." + csrfToken);
+                session.setAttribute(SessionKey.CSRF_TOKEN, csrfToken);
             }
             csrfTokenBuf[0] = csrfToken;
             return null;

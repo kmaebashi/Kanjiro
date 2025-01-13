@@ -11,4 +11,12 @@ public class DateAnswerDto {
 
     @TableColumn("ANSWER")
     public int answer;
+
+    public DateAnswerDto() {}
+
+    public DateAnswerDto(String userId, String possibleDateId, int answer) {
+        this.userId = userId;
+        this.possibleDateId = possibleDateId;
+        this.answer = answer;
+    }
 }

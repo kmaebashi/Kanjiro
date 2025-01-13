@@ -20,7 +20,8 @@ public class AnswerDbAccess {
                       USER_ID,
                       USER_NAME,
                       MESSAGE,
-                      IS_PROTECTED
+                      IS_PROTECTED,
+                      UPDATED_AT
                     FROM ANSWERS
                     WHERE
                       EVENT_ID = :EVENT_ID
@@ -46,7 +47,8 @@ public class AnswerDbAccess {
                       USER_ID,
                       USER_NAME,
                       MESSAGE,
-                      IS_PROTECTED
+                      IS_PROTECTED,
+                      UPDATED_AT
                     FROM ANSWERS
                     WHERE
                       EVENT_ID = :EVENT_ID

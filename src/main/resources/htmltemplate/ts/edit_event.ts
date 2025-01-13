@@ -54,23 +54,39 @@ async function editEventButtonClicked(e: Event) {
   console.log("json.." + JSON.stringify(eventInfo));
 
   const csrfToken = getCsrfToken();
-  const response = await fetch("./api/posteventinfo", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Csrf-Token": csrfToken
-      },
-      body: JSON.stringify(eventInfo)
-    });
-  console.log("response.." + response.status);
-  const retJson = await response.json();
 
-  if (!response.ok) {
-    console.log("エラー! retJson.." + retJson);
-    alert("登録に失敗しました。" + retJson.message);
-  } else {
-    console.log("retJson.." + JSON.stringify(retJson));
-    window.location.href = "./event?eventId=" + retJson.eventId;
+  let registered = false;
+  for (;;) {
+    console.log("loop");
+    const response = await fetch("./api/modifyeventinfo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Csrf-Token": csrfToken
+        },
+        body: JSON.stringify(eventInfo)
+      });
+    console.log("response.." + response.status);
+    const retJson = await response.json();
+    if (!response.ok) {
+      console.log("エラー! retJson.." + retJson);
+      alert("登録に失敗しました。" + retJson.message);
+      break;
+    } else {
+      console.log("retJson.." + JSON.stringify(retJson));
+      const result = retJson as PostEventInfoResult;
+      if (result.registered) {
+        window.location.href = "./event?eventId=" + retJson.eventId;
+        break;
+      } else {
+        if (confirm(result.warningMessage + "\n変更しますか?")) {
+          eventInfo.updatedAt = result.updatedAt;
+          eventInfo.registerForce = true;
+        } else {
+          break;
+        }
+      }
+    }
   }
 }
 

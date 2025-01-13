@@ -51,7 +51,7 @@ function createEventButtonClicked(e) {
         };
         console.log("json.." + JSON.stringify(eventInfo));
         const csrfToken = getCsrfToken();
-        const response = yield fetch("./api/posteventinfo", {
+        const response = yield fetch("./api/createeventinfo", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

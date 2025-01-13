@@ -53,9 +53,11 @@ public class KanjiroRouter extends Router {
             throw new BadRequestException("URLが不正です。");
         }
         if (request.getMethod().equals("GET")) {
+            this.logger.info("GET path.." + path);
             String[] nextCsrfTokenBuf = new String[1];
             CsrfTokenController.getNextCsrfToken(invoker, deviceId, nextCsrfTokenBuf);
             String nextCsrfToken = nextCsrfTokenBuf[0];
+            this.logger.info("nextCsrfToken.." + nextCsrfToken);
             if (route == Route.TOP) {
                 return TopPageController.showPage(invoker, deviceId, nextCsrfToken);
             } else if (route == Route.EDIT_EVENT) {
@@ -64,11 +66,15 @@ public class KanjiroRouter extends Router {
                 return GuestPageController.showPage(invoker, deviceId, nextCsrfToken);
             }
         } else if (request.getMethod().equals("POST")) {
+            this.logger.info("POST path.." + path);
             String[] lastCsrfTokenBuf = new String[1];
             CsrfTokenController.getLastCsrfToken(invoker, deviceId, lastCsrfTokenBuf);
             String lastCsrfToken = lastCsrfTokenBuf[0];
-            if (route == Route.POST_EVENT_INFO) {
-                return OrganizerController.postEventInfo(invoker, deviceId, lastCsrfToken);
+            this.logger.info("lastCsrfToken.." + lastCsrfToken);
+            if (route == Route.CREATE_EVENT_INFO) {
+                return OrganizerController.postEventInfo(invoker, deviceId, lastCsrfToken, true);
+            } else if (route == Route.MODIFY_EVENT_INFO) {
+                return OrganizerController.postEventInfo(invoker, deviceId, lastCsrfToken, false);
             } else if (route == Route.POST_ANSWER_INFO) {
                 return GuestPageController.postAnswerInfo(invoker, deviceId, lastCsrfToken);
             }

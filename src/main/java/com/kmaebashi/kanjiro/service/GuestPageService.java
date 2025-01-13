@@ -118,8 +118,10 @@ public class GuestPageService {
         List<DateAnswerDto> dateAnswerDtoList = AnswerDbAccess.getDateAnswers(context.getDbAccessInvoker(), eventId);
 
         for (DateAnswerDto daDto : dateAnswerDtoList) {
-            pdt.userAnswers[userIdToIndex.get(daDto.userId)].answers[possibleDateIdToIndex.get(daDto.possibleDateId)]
-                    = daDto.answer;
+            if (possibleDateIdToIndex.containsKey(daDto.possibleDateId)) {
+                pdt.userAnswers[userIdToIndex.get(daDto.userId)].answers[possibleDateIdToIndex.get(daDto.possibleDateId)]
+                        = daDto.answer;
+            }
         }
         return new PossibleDatesInfo(pdt, possibleDateDtoList);
     }

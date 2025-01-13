@@ -31,7 +31,4 @@ public class EventDto {
 
     @TableColumn("IS_AUTO_SCHEDULE")
     public boolean isAutoSchedule;
-
-    @TableColumn("UPDATED_AT")
-    public LocalDateTime updatedAt;
 }

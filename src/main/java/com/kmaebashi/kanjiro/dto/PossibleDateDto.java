@@ -14,4 +14,13 @@ public class PossibleDateDto {
 
     @TableColumn("DISPLAY_ORDER")
     public int displayOrder;
+
+    public PossibleDateDto() {}
+
+    public PossibleDateDto(String possibleDateId, String eventId, String name, int displayOrder) {
+        this.possibleDateId = possibleDateId;
+        this.eventId = eventId;
+        this.name = name;
+        this.displayOrder = displayOrder;
+    }
 }

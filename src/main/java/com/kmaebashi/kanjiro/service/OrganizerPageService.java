@@ -1,6 +1,7 @@
 package com.kmaebashi.kanjiro.service;
 
 import com.kmaebashi.jsonparser.ClassMapper;
+import com.kmaebashi.kanjiro.common.Answer;
 import com.kmaebashi.kanjiro.controller.data.EventInfo;
 import com.kmaebashi.kanjiro.controller.data.PostEventInfoResult;
 import com.kmaebashi.kanjiro.dbaccess.AnswerDbAccess;
@@ -8,6 +9,7 @@ import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.EventDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.PossibleDateDbAccess;
 import com.kmaebashi.kanjiro.dto.AnswerDto;
+import com.kmaebashi.kanjiro.dto.DateAnswerDto;
 import com.kmaebashi.kanjiro.dto.EventDto;
 import com.kmaebashi.kanjiro.dto.PossibleDateDto;
 import com.kmaebashi.kanjiro.dto.UserDto;
@@ -24,8 +26,18 @@ import org.jsoup.nodes.Element;
 import com.kmaebashi.simplelogger.Logger;
 
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 public class OrganizerPageService {
     private OrganizerPageService() {}
@@ -113,76 +125,156 @@ public class OrganizerPageService {
         autoScheduleCheckElem.attr("checked", eventDto.isAutoSchedule);
     }
 
-    public static JsonResult mergeEventInfo(ServiceInvoker invoker, String deviceId, EventInfo eventInfo) {
+    public static PostEventInfoResult createNewEvent(ServiceInvoker invoker, String deviceId, EventInfo eventInfo) {
+        return invoker.invoke((context) -> {
+            String userId = DbUtil.getOrCreateUser(context, deviceId, eventInfo.organizerName);
+            String eventId = UuidUtil.getUniqueId();
+            EventDbAccess.insertEvent(context.getDbAccessInvoker(),
+                    eventId, eventInfo.organizerName, userId,
+                    eventInfo.eventName, eventInfo.eventDescription,
+                    eventInfo.appendTime, eventInfo.isSecretMode, eventInfo.isAutoSchedule);
+
+            int displayOrder = 1;
+            for (String possibleDateStr : eventInfo.scheduleArray) {
+                String possibleDateId = UuidUtil.getUniqueId();
+                PossibleDateDbAccess.insertPossibleDate(context.getDbAccessInvoker(),
+                        possibleDateId, eventId, possibleDateStr, displayOrder);
+                displayOrder++;
+            }
+            return new PostEventInfoResult(eventId, true, null, null);
+        });
+    }
+
+    public static PostEventInfoResult modifyEventInfo(ServiceInvoker invoker, String deviceId, EventInfo eventInfo) {
         return invoker.invoke((context) -> {
             Logger logger = context.getLogger();
             logger.info("eventInfo.eventName.." + eventInfo.eventName);
 
-
-
-            boolean createNew = false;
-            if (eventInfo.eventId == null) {
-                createNew = true;
-            } else {
-                EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventInfo.eventId);
-                if (eventDto == null) {
-                    createNew = true;
-                }
-            }
+            EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventInfo.eventId);
             PostEventInfoResult result;
-            if (createNew) {
-                result = createNewEvent(context, deviceId, eventInfo);
-            } else {
-                if (!eventInfo.registerForce) {
-                    String[] updatedAtBuf = new String[1];
-                    List<AnswerDto> answerDtoList
-                            = AnswerDbAccess.getAnswers(context.getDbAccessInvoker(), eventInfo.eventId);
-                    String checkResult = checkExistingEvent(context, eventInfo, updatedAtBuf);
-                    if (checkResult == null) {
-                        result = mergeEvent(context, eventInfo);
-                    } else {
-                        result = new PostEventInfoResult(eventInfo.eventId, false, checkResult, updatedAtBuf[0]);
-                    }
-                } else {
-                    result = mergeEvent(context, eventInfo);
-                }
-            }
-            String json = ClassMapper.toJson(result);
 
-            return new JsonResult(json);
+            List<PossibleDateDto> possibleDateDtoList
+                    = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventInfo.eventId);
+            List<AnswerDto> answerDtoList
+                    = AnswerDbAccess.getAnswers(context.getDbAccessInvoker(), eventInfo.eventId);
+            String lastUpdate = getAnswerLastUpdate(answerDtoList);
+            List<DateAnswerDto> dateAnswerDtoList
+                    = AnswerDbAccess.getDateAnswers(context.getDbAccessInvoker(), eventInfo.eventId);
+
+            if (!eventInfo.registerForce
+                || (eventInfo.updatedAt != null && !eventInfo.updatedAt.equals(lastUpdate))) {
+                String checkResult = checkExistingAnswer(eventInfo,
+                                          possibleDateDtoList, answerDtoList, dateAnswerDtoList);
+                if (checkResult == null) {
+                    result = mergeEvent(context, eventInfo, possibleDateDtoList, answerDtoList,
+                                        dateAnswerDtoList);
+                } else {
+                    result = new PostEventInfoResult(eventInfo.eventId, false, checkResult, lastUpdate);
+                }
+            } else {
+                result = mergeEvent(context, eventInfo, possibleDateDtoList, answerDtoList,
+                        dateAnswerDtoList);
+            }
+            return result;
         });
     }
 
     private static DateTimeFormatter lastUpdateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+    static String getAnswerLastUpdate(List<AnswerDto> answerDtoList) {
+        LocalDateTime lastUpdatedAt = null;
+        for (AnswerDto ad : answerDtoList) {
+            if (lastUpdatedAt == null || ad.updatedAt.isAfter(lastUpdatedAt)) {
+                lastUpdatedAt = ad.updatedAt;
+            }
+        }
+        if (lastUpdatedAt == null) {
+            return null;
+        } else {
+            return lastUpdateFormatter.format(lastUpdatedAt);
+        }
+    }
 
-    static PostEventInfoResult createNewEvent(ServiceContext context, String deviceId, EventInfo eventInfo) {
-        String userId = DbUtil.getOrCreateUser(context, deviceId, eventInfo.organizerName);
-        String eventId = UuidUtil.getUniqueId();
-        EventDbAccess.insertEvent(context.getDbAccessInvoker(),
-                                  eventId, eventInfo.organizerName, userId,
-                                  eventInfo.eventName, eventInfo.eventDescription,
-                                  eventInfo.appendTime, eventInfo.isSecretMode, eventInfo.isAutoSchedule);
+    record DeleteAnswer(PossibleDateDto possibleDateDto, LinkedHashMap<String, Integer> userIdAnswer) {}
 
+
+    static String checkExistingAnswer(EventInfo eventInfo,
+                                     List<PossibleDateDto> possibleDateDtoList, List<AnswerDto> answerDtoList,
+                                     List<DateAnswerDto> dateAnswerDtoList) {
+        HashMap<String, String> userIdName = new HashMap<>();
+        for (AnswerDto ad : answerDtoList) {
+            userIdName.put(ad.userId, ad.userName);
+        }
+        List<String> newScheduleArray = Arrays.asList(eventInfo.scheduleArray);
+        List<DeleteAnswer> deleteAnswerList = new ArrayList<>();
+        HashMap<String, String> toBeDeleted = new HashMap<>();
+        for (PossibleDateDto pd : possibleDateDtoList) {
+            if (!newScheduleArray.contains(pd.name)) {
+                deleteAnswerList.add(new DeleteAnswer(pd, new LinkedHashMap<String, Integer>()));
+                toBeDeleted.put(pd.name, pd.possibleDateId);
+            }
+        }
+        for (DeleteAnswer delAns : deleteAnswerList) {
+            for (DateAnswerDto dateAns : dateAnswerDtoList) {
+                if (dateAns.possibleDateId.equals(delAns.possibleDateDto.possibleDateId)) {
+                    if (dateAns.answer > Answer.UNKNOWN.getValue()) {
+                        continue;
+                    }
+                    if (delAns.userIdAnswer.containsKey(dateAns.userId)) {
+                        if (dateAns.answer < delAns.userIdAnswer().get(dateAns.userId)) {
+                            delAns.userIdAnswer().put(dateAns.userId, dateAns.answer);
+                        }
+                    } else {
+                        delAns.userIdAnswer().put(dateAns.userId, dateAns.answer);
+                    }
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (DeleteAnswer delAns : deleteAnswerList) {
+            if (!delAns.userIdAnswer().isEmpty()) {
+                sb.append("日程「" + delAns.possibleDateDto.name + "」を削除しようとしています。この日程には、");
+                boolean isFirst = true;
+                for (String userId : delAns.userIdAnswer.keySet()) {
+                    if (!isFirst) {
+                        sb.append(", ");
+                    }
+                    isFirst = false;
+                    sb.append("" + userIdName.get(userId) + "さん");
+                }
+                sb.append("が、〇または△の回答をしています。\r\n");
+            }
+        }
+
+        if (sb.length() == 0) {
+            return null;
+        } else {
+            return sb.toString();
+        }
+    }
+
+    static PostEventInfoResult mergeEvent(ServiceContext context, EventInfo eventInfo,
+                                          List<PossibleDateDto> possibleDateDtoList, List<AnswerDto> answerDtoList,
+                                          List<DateAnswerDto> dateAnswerDtoList) {
+
+        EventDbAccess.updateEvent(context.getDbAccessInvoker(), eventInfo.eventId, eventInfo.organizerName,
+                                  eventInfo.eventName, eventInfo.eventDescription, eventInfo.appendTime,
+                                  eventInfo.isSecretMode, eventInfo.isAutoSchedule);
+
+        List<String> newScheduleArray = Arrays.asList(eventInfo.scheduleArray);
+        for (PossibleDateDto pd : possibleDateDtoList) {
+            if (!newScheduleArray.contains(pd.name)) {
+                PossibleDateDbAccess.logicalDeletePossibleDate(context.getDbAccessInvoker(),
+                                                               pd.eventId, pd.possibleDateId);
+            }
+        }
         int displayOrder = 1;
-        for (String possibleDateStr : eventInfo.scheduleArray) {
-            String possibleDateId = UuidUtil.getUniqueId();
-            PossibleDateDbAccess.insertPossibleDate(context.getDbAccessInvoker(),
-                                                possibleDateId, eventId, possibleDateStr, displayOrder);
+        for (String name : eventInfo.scheduleArray) {
+            String newPossibleDateId = UuidUtil.getUniqueId();
+            PossibleDateDbAccess.upsertPossibleDate(context.getDbAccessInvoker(),
+                                                    eventInfo.eventId, newPossibleDateId, name, displayOrder);
             displayOrder++;
         }
-        EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
-        String lastUpdateAt = lastUpdateFormatter.format(eventDto.updatedAt);
 
-        return new PostEventInfoResult(eventId, true, null, lastUpdateAt);
-    }
-
-    static String checkExistingEvent(ServiceContext context, EventInfo eventInfo, String[] updatedAtBuf) {
-
-
-        return null;
-    }
-
-    static PostEventInfoResult mergeEvent(ServiceContext context, EventInfo eventInfo) {
         return null;
     }
 }

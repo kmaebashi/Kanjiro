@@ -28,6 +28,13 @@ type EventInfo = {
   updatedAt: string | null;
 };
 
+type PostEventInfoResult = {
+  eventId: string;
+  registered: boolean;
+  warningMessage: string;
+  updatedAt: string;
+};
+
 function scheduleToArray(textAreaStr: string): [string[], string | null] {
   const ret: string[] = [];
 

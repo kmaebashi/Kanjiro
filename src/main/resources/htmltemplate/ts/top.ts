@@ -52,7 +52,7 @@ async function createEventButtonClicked(e: Event) {
   console.log("json.." + JSON.stringify(eventInfo));
 
   const csrfToken = getCsrfToken();
-  const response = await fetch("./api/posteventinfo", {
+  const response = await fetch("./api/createeventinfo", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

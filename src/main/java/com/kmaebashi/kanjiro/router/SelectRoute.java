@@ -20,8 +20,10 @@ public class SelectRoute {
                 return Route.EDIT_EVENT;
             } else if (path.equals("guest")) {
                 return Route.GUEST;
-            } else if (path.equals("api/posteventinfo")) {
-                return Route.POST_EVENT_INFO;
+            } else if (path.equals("api/createeventinfo")) {
+                return Route.CREATE_EVENT_INFO;
+            } else if (path.equals("api/modifyeventinfo")) {
+                return Route.MODIFY_EVENT_INFO;
             } else if (path.equals("api/postanswerinfo")) {
                 return Route.POST_ANSWER_INFO;
             }
