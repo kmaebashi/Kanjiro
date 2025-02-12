@@ -145,8 +145,6 @@ public class AuthenticationDbAccess {
                     SELECT
                       U.USER_ID,
                       U.NAME,
-                      U.LOGIN_ID,
-                      U.PASSWORD,
                       D.DEVICE_ID
                     FROM DEVICES D
                     INNER JOIN USERS U
@@ -169,16 +167,38 @@ public class AuthenticationDbAccess {
     public static int updateUserName(DbAccessInvoker invoker, String userId, String newName) {
         return invoker.invoke((context) -> {
             String sql = """
-                      UPDATE USERS SET
-                        NAME = :NEW_NAME
-                      WHERE
-                        USER_ID = :USER_ID
+                    UPDATE USERS SET
+                    NAME = :NEW_NAME
+                    WHERE
+                    USER_ID = :USER_ID
                     """;
             NamedParameterPreparedStatement npps
                     = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
             var params = new HashMap<String, Object>();
             params.put("USER_ID", userId);
             params.put("NEW_NAME", newName);
+
+            npps.setParameters(params);
+            int result = npps.getPreparedStatement().executeUpdate();
+
+            return result;
+        });
+    }
+
+    public static int linkDeviceToUser(DbAccessInvoker invoker, String deviceId, String userId) {
+        return invoker.invoke((context) -> {
+            String sql = """
+                    UPDATE DEVICES SET
+                      USER_ID = :USER_ID
+                    WHERE
+                      DEVICE_ID = :DEVICE_ID
+                    """;
+
+            NamedParameterPreparedStatement npps
+                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
+            var params = new HashMap<String, Object>();
+            params.put("DEVICE_ID", deviceId);
+            params.put("USER_ID", userId);
 
             npps.setParameters(params);
             int result = npps.getPreparedStatement().executeUpdate();

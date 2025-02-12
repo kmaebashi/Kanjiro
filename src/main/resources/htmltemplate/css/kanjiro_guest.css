@@ -73,6 +73,19 @@ dd {
   content: "：";
 }
 
+#deadline-line {
+  margin-bottom: 10px;
+}
+
+#deadline-line .title {
+  font-weight: bold;
+}
+
+#deadline-line .title::after {
+  content: "：";
+}
+
+
 #event-description {
   margin-bottom: 10px;
 }
@@ -103,7 +116,6 @@ table td.count {
   background-color: #ffffee;
 }
 
-
 div.reply-button-div {
   height: 100px;
   padding-top: 10px;
@@ -122,7 +134,7 @@ button#reply-button {
   border-radius: 5px;
 }
 
-button.reply-button-class:hover {
+#reply-button:hover {
   background-color: #eda975;
 }
 
@@ -155,7 +167,6 @@ label:has(input[type="radio"]:not(:checked)):hover {
   color: black;
   background: linear-gradient(#bbbbbb, #eeeeee);
 }
-
 
 #input-reply-div p {
   margin-top: 10px;

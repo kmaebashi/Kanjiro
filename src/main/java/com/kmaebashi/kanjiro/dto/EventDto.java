@@ -20,6 +20,9 @@ public class EventDto {
     @TableColumn("DESCRIPTION")
     public String description;
 
+    @TableColumn("DEADLINE")
+    public LocalDateTime deadline;
+
     @TableColumn("SCHEDULE_APPEND_TIME")
     public String appendTime;
 

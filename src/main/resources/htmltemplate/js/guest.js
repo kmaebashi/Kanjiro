@@ -77,7 +77,7 @@ function renderPossibleDatesTableDayRow(tableElem) {
         for (let userIdx = 0; userIdx < possibleDatesTable.userAnswers.length; userIdx++) {
             const answer = possibleDatesTable.userAnswers[userIdx].answers[dateIdx];
             const answerTd = document.createElement("td");
-            answerTd.innerText = markTable[answer - 1];
+            answerTd.innerText = getAnswerMark(answer);
             row.appendChild(answerTd);
         }
         tableElem.appendChild(row);
@@ -101,7 +101,7 @@ function renderPossibleDatesTableUserRow(tableElem) {
         for (let dateIdx = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
             const answer = possibleDatesTable.userAnswers[userIdx].answers[dateIdx];
             const answerTd = document.createElement("td");
-            answerTd.innerText = markTable[answer - 1];
+            answerTd.innerText = getAnswerMark(answer);
             row.appendChild(answerTd);
         }
         tableElem.appendChild(row);
@@ -119,6 +119,17 @@ function renderPossibleDatesTableUserRow(tableElem) {
             markRow.appendChild(markTd);
         }
         tableElem.appendChild(markRow);
+    }
+}
+function getAnswerMark(answer) {
+    if (answer == -1) {
+        return "*";
+    }
+    else if (answer == 0) {
+        return "-";
+    }
+    else {
+        return markTable[answer - 1];
     }
 }
 function countAnswer(dateIdx, answer) {

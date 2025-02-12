@@ -18,9 +18,32 @@ a:hover {
   color: red;
 }
 
+a#link-device-a {
+  color: #ffffff;
+}
+
+a#link-device-a:hover {
+  color: #ffcccc;
+}
+
 input[type="text"] {
   border-width: 1px;
   border-color: #000000;
+}
+
+input[type="date"] {
+  border-width: 1px;
+  border-color: #000000;
+}
+
+input[type="time"] {
+  border-width: 1px;
+  border-color: #000000;
+}
+
+input[disabled] {
+  color: #333333;
+  background-color: #cccccc;
 }
 
 textarea {
@@ -69,7 +92,6 @@ header {
 
 header section h1 {
   margin: auto;
-  color: #ffffff;
   font-size: 30px;
   font-weight: bold;
 }
@@ -77,6 +99,11 @@ header section h1 {
 header section a.page-title {
   color: #ffffff;
   text-decoration: none;
+  float: left;
+}
+
+header section p.link-device-line {
+  text-align: right;
 }
 
 footer {

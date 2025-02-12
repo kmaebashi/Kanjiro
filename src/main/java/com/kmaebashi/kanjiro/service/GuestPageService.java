@@ -1,7 +1,9 @@
 package com.kmaebashi.kanjiro.service;
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import com.kmaebashi.jsonparser.ClassMapper;
 import com.kmaebashi.kanjiro.controller.data.AnswerInfo;
@@ -40,14 +42,18 @@ public class GuestPageService {
         return invoker.invoke((context) -> {
             Path htmlPath = context.getHtmlTemplateDirectory().resolve("guest.html");
             Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
-
             DocumentResult ret = new DocumentResult(doc);
 
-            renderEventInfo(context, doc, eventId);
+            EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
+            if (eventDto == null) {
+                throw new BadRequestException("そのイベントはありません。");
+            }
+            HeaderRenderer.renderLinkDevice(doc, eventId);
+            renderEventInfo(context, doc, eventDto);
             List<AnswerDto> answerDtoList = renderMessageArea(context, doc, eventId);
-            PossibleDatesInfo pdi = getPossibleDatesTable(context, eventId, answerDtoList);
-            setPossibleDatesTable(pdi.pdt(), doc);
             UserDto deviceUser = AuthenticationDbAccess.getUserByDeviceId(context.getDbAccessInvoker(), deviceId);
+            PossibleDatesInfo pdi = getPossibleDatesTable(context, eventDto, deviceUser, answerDtoList);
+            setPossibleDatesTable(pdi.pdt(), doc);
             renderAnswerArea(context, doc, pdi.pdt(), answerDtoList, userId, deviceUser, pdi.possibleInfoDtoList());
 
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
@@ -56,18 +62,23 @@ public class GuestPageService {
         });
     }
 
-    private static void renderEventInfo(ServiceContext context, Document doc, String eventId) {
-        EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
-        if (eventDto == null) {
-            throw new BadRequestException("そのイベントはありません。");
-        }
-
+    private static DateTimeFormatter deadlineFormmater = DateTimeFormatter.ofPattern("yyyy年MM月dd日(E)", Locale.JAPANESE);
+    
+    private static void renderEventInfo(ServiceContext context, Document doc, EventDto eventDto) {
         Element eventNameElem = doc.getElementById("event-name");
         eventNameElem.text(eventDto.eventName);
         Element organizerNameElem = doc.getElementById("organizer-name");
         organizerNameElem.text(eventDto.organizerName);
         Element eventDescriptionElem = doc.getElementById("event-description");
         eventDescriptionElem.html(HtmlUtil.escapeHtml2(eventDto.description));
+        Element deadLinePElem = doc.getElementById("deadline-line");
+        if (eventDto.deadline == null) {
+            deadLinePElem.remove();
+        } else {
+            String deadlineStr = deadlineFormmater.format(eventDto.deadline);
+            Element deadLineSpan = deadLinePElem.getElementById("deadline-date");
+            deadLineSpan.text(deadlineStr);
+        }
     }
 
     private static List<AnswerDto> renderMessageArea(ServiceContext context, Document doc, String eventId) {
@@ -89,9 +100,10 @@ public class GuestPageService {
     }
 
     record PossibleDatesInfo(PossibleDatesTable pdt, List<PossibleDateDto> possibleInfoDtoList) {}
-    static PossibleDatesInfo getPossibleDatesTable(ServiceContext context, String eventId, List<AnswerDto> answerDtoList) {
+    static PossibleDatesInfo getPossibleDatesTable(ServiceContext context, EventDto eventDto, UserDto deviceUser,
+                                                   List<AnswerDto> answerDtoList) {
         List<PossibleDateDto> possibleDateDtoList
-                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventId);
+                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventDto.eventId);
         HashMap<String, Integer> possibleDateIdToIndex = new HashMap<>();
         HashMap<String, Integer> userIdToIndex = new HashMap<>();
 
@@ -115,12 +127,21 @@ public class GuestPageService {
             pdt.userAnswers[ansIdx] = ua;
             ansIdx++;
         }
-        List<DateAnswerDto> dateAnswerDtoList = AnswerDbAccess.getDateAnswers(context.getDbAccessInvoker(), eventId);
+        List<DateAnswerDto> dateAnswerDtoList
+                = AnswerDbAccess.getDateAnswers(context.getDbAccessInvoker(), eventDto.eventId);
 
         for (DateAnswerDto daDto : dateAnswerDtoList) {
             if (possibleDateIdToIndex.containsKey(daDto.possibleDateId)) {
-                pdt.userAnswers[userIdToIndex.get(daDto.userId)].answers[possibleDateIdToIndex.get(daDto.possibleDateId)]
-                        = daDto.answer;
+                int userIdx = userIdToIndex.get(daDto.userId);
+                int dateIdx = possibleDateIdToIndex.get(daDto.possibleDateId);
+                if (!eventDto.isSecretMode
+                    || (deviceUser != null
+                        && (deviceUser.userId.equals(eventDto.organizierId)
+                            || deviceUser.userId.equals(daDto.userId)))) {
+                    pdt.userAnswers[userIdx].answers[dateIdx] = daDto.answer;
+                } else {
+                    pdt.userAnswers[userIdx].answers[dateIdx] = -1;
+                }
             }
         }
         return new PossibleDatesInfo(pdt, possibleDateDtoList);

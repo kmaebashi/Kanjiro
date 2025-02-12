@@ -20,6 +20,7 @@ type EventInfo = {
   organizerName: string;
   eventName: string;
   eventDescription: string;
+  eventDeadline: string | null;
   scheduleArray: string[];
   appendTime: string;
   isSecretMode: boolean;
@@ -53,4 +54,31 @@ function scheduleToArray(textAreaStr: string): [string[], string | null] {
   }
 
   return [ret, null];
+}
+
+function changeDeadlineCheck(e: Event) {
+  const deadlineCheck: HTMLInputElement
+                    = document.getElementById("set-deadline")! as HTMLInputElement;
+  const inputList: NodeList = document.querySelectorAll("#event-deadline input");
+
+  for (const inputElem of inputList) {
+    (inputElem as HTMLInputElement).disabled = !deadlineCheck.checked;
+  }
+}
+
+function getEventDeadline(): string | null {
+  const deadlineCheck: HTMLInputElement
+                    = document.getElementById("set-deadline")! as HTMLInputElement;
+  if (!deadlineCheck.checked) {
+    return null;
+  }
+  const dateElem: HTMLInputElement
+               = document.getElementById("deadline-date")! as HTMLInputElement;
+  const timeElem: HTMLInputElement
+               = document.getElementById("deadline-time")! as HTMLInputElement;
+
+  if (dateElem.value.length === 0 || timeElem.value.length === 0) {
+    return null;
+  }
+  return dateElem.value + " " + timeElem.value;
 }

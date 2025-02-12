@@ -93,7 +93,7 @@ function renderPossibleDatesTableDayRow(tableElem: HTMLElement): void {
     for (let userIdx: number = 0; userIdx < possibleDatesTable.userAnswers.length; userIdx++) {
       const answer: number = possibleDatesTable.userAnswers[userIdx].answers[dateIdx];
       const answerTd: HTMLTableCellElement = document.createElement("td");
-      answerTd.innerText = markTable[answer - 1];
+      answerTd.innerText = getAnswerMark(answer);
       row.appendChild(answerTd);
     }
     tableElem.appendChild(row);
@@ -122,7 +122,7 @@ function renderPossibleDatesTableUserRow(tableElem: HTMLElement): void {
     for (let dateIdx: number = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
       const answer: number = possibleDatesTable.userAnswers[userIdx].answers[dateIdx];
       const answerTd: HTMLTableCellElement = document.createElement("td");
-      answerTd.innerText = markTable[answer - 1];
+      answerTd.innerText = getAnswerMark(answer);
       row.appendChild(answerTd);
     }
     tableElem.appendChild(row);
@@ -142,6 +142,16 @@ function renderPossibleDatesTableUserRow(tableElem: HTMLElement): void {
       markRow.appendChild(markTd);
     }
     tableElem.appendChild(markRow);
+  }
+}
+
+function getAnswerMark(answer: number): string {
+  if (answer == -1) {
+    return "*";
+  }else if (answer == 0) {
+    return "-";
+  } else {
+    return markTable[answer - 1];
   }
 }
 

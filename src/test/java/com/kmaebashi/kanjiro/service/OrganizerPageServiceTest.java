@@ -6,6 +6,7 @@ import com.kmaebashi.kanjiro.common.Answer;
 import com.kmaebashi.kanjiro.controller.data.EventInfo;
 import com.kmaebashi.kanjiro.controller.data.PostEventInfoResult;
 import com.kmaebashi.kanjiro.dbaccess.AnswerDbAccess;
+import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.EventDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.PossibleDateDbAccess;
 import com.kmaebashi.kanjiro.dto.AnswerDto;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +54,8 @@ class OrganizerPageServiceTest {
     private static void deleteAll() throws Exception {
         DbAccessContext context = new DbAccessContextImpl(conn, logger);
 
+        KanjiroTestUtil.deleteAll(context, "USERS");
+        KanjiroTestUtil.deleteAll(context, "DEVICES");
         KanjiroTestUtil.deleteAll(context, "EVENTS");
         KanjiroTestUtil.deleteAll(context, "POSSIBLE_DATES");
         KanjiroTestUtil.deleteAll(context, "ANSWERS");
@@ -140,7 +144,7 @@ class OrganizerPageServiceTest {
         String ret = OrganizerPageService.checkExistingAnswer(eventInfo, possibleDateDtoList,
                                                               answerDtoList, dateAnswerDtoList);
         assertEquals("日程「1月2日(木) 19:00～」を削除しようとしています。この日程には、ユーザ1さん, ユーザ3さんが、〇または△の回答をしています。\n" +
-                "日程「1月3日(金) 19:00～」を削除しようとしています。この日程には、ユーザ1さんが、〇または△の回答をしています。", ret);
+                "日程「1月3日(金) 19:00～」を削除しようとしています。この日程には、ユーザ1さんが、〇または△の回答をしています。\n", ret);
     }
 
     @Test
@@ -152,8 +156,12 @@ class OrganizerPageServiceTest {
                 logger);
         ServiceInvoker si = new ServiceInvokerImpl(sc);
 
+        AuthenticationDbAccess.upsertDevice(di, "OrgPSrvMergeEvtDevi001", LocalDateTime.now(), "dummysecret");
+        AuthenticationDbAccess.insertUser(di, "OrgPSrvMergeEvtUser001", "幹事太郎");
+        AuthenticationDbAccess.setUserToDevice(di, "OrgPSrvMergeEvtDevi001", "OrgPSrvMergeEvtUser001");
+
         EventDbAccess.insertEvent(di, "OrgPSrvMergeEvtTest001", "幹事太郎", "OrgPSrvMergeEvtUser001",
-                "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。",
+                "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。", LocalDateTime.of(2025, 1, 31, 23, 59),
                 "19:00～", false, false);
         PossibleDateDbAccess.insertPossibleDate(di, "OrgPSrvMergeEvtPD001__", "OrgPSrvMergeEvtTest001", "10/01(月)", 1);
         PossibleDateDbAccess.insertPossibleDate(di, "OrgPSrvMergeEvtPD002__", "OrgPSrvMergeEvtTest001", "10/02(火)", 2);
@@ -179,7 +187,7 @@ class OrganizerPageServiceTest {
         eventInfo.registerForce = true;
         eventInfo.updatedAt = null;
 
-        PostEventInfoResult result = OrganizerPageService.modifyEventInfo(si, "dummyDeviceId", eventInfo);
+        PostEventInfoResult result = OrganizerPageService.modifyEventInfo(si, "OrgPSrvMergeEvtDevi001", eventInfo);
         EventDto eventDto = EventDbAccess.getEvent(di, "OrgPSrvMergeEvtTest001");
         assertEquals("幹事次郎", eventDto.organizerName);
         assertEquals("なんとかさん送別会(改)", eventDto.eventName);
@@ -207,8 +215,12 @@ class OrganizerPageServiceTest {
                 logger);
         ServiceInvoker si = new ServiceInvokerImpl(sc);
 
-        EventDbAccess.insertEvent(di, "OrgPSrvMergeEvtTest002", "幹事太郎", "OrgPSrvMergeEvtUser001",
-                "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。",
+        AuthenticationDbAccess.upsertDevice(di, "OrgPSrvMergeEvtDevi002", LocalDateTime.now(), "dummysecret");
+        AuthenticationDbAccess.insertUser(di, "OrgPSrvMergeEvtUser002", "幹事太郎");
+        AuthenticationDbAccess.setUserToDevice(di, "OrgPSrvMergeEvtDevi002", "OrgPSrvMergeEvtUser002");
+
+        EventDbAccess.insertEvent(di, "OrgPSrvMergeEvtTest002", "幹事太郎", "OrgPSrvMergeEvtUser002",
+                "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。", LocalDateTime.of(2025, 1, 31, 23, 59),
                 "19:00～", false, false);
         PossibleDateDbAccess.insertPossibleDate(di, "OrgPSrvMergeEvt02PD001", "OrgPSrvMergeEvtTest002", "10/01(月)", 1);
         PossibleDateDbAccess.insertPossibleDate(di, "OrgPSrvMergeEvt02PD002", "OrgPSrvMergeEvtTest002", "10/02(火)", 2);
@@ -219,7 +231,7 @@ class OrganizerPageServiceTest {
         AnswerDbAccess.insertAnswer(di, "OrgPSrvMergeEvtTest002", "OrgPSrvMergeEvt02User1", "ゲスト1", "よろしく1", false);
         //AnswerDbAccess.insertDateAnswer(di, "OrgPSrvMergeEvtTest002", "OrgPSrvMergeEvt02User1", "ゲスト1", "よろしく1", false);
         EventInfo eventInfo = new EventInfo();
-        eventInfo.eventId = "OrgPSrvMergeEvtTest001";
+        eventInfo.eventId = "OrgPSrvMergeEvtTest002";
         eventInfo.organizerName = "幹事次郎";
         eventInfo.eventName = "なんとかさん送別会(改)";
         eventInfo.eventDescription = "ひかえめに送り出しましょう。";
@@ -236,8 +248,8 @@ class OrganizerPageServiceTest {
         eventInfo.registerForce = true;
         eventInfo.updatedAt = null;
 
-        PostEventInfoResult result = OrganizerPageService.modifyEventInfo(si, "dummyDeviceId", eventInfo);
-        EventDto eventDto = EventDbAccess.getEvent(di, "OrgPSrvMergeEvtTest001");
+        PostEventInfoResult result = OrganizerPageService.modifyEventInfo(si, "OrgPSrvMergeEvtDevi002", eventInfo);
+        EventDto eventDto = EventDbAccess.getEvent(di, "OrgPSrvMergeEvtTest002");
         assertEquals("幹事次郎", eventDto.organizerName);
         assertEquals("なんとかさん送別会(改)", eventDto.eventName);
         assertEquals("ひかえめに送り出しましょう。", eventDto.description);
@@ -246,7 +258,7 @@ class OrganizerPageServiceTest {
         assertEquals(true, eventDto.isAutoSchedule);
         assertEquals("ひかえめに送り出しましょう。", eventDto.description);
 
-        List<PossibleDateDto> possibleDateDtoList = PossibleDateDbAccess.getPossbleDates(di, "OrgPSrvMergeEvtTest001");
+        List<PossibleDateDto> possibleDateDtoList = PossibleDateDbAccess.getPossbleDates(di, "OrgPSrvMergeEvtTest002");
         assertEquals(5, possibleDateDtoList.size());
         assertEquals("10/01(月)", possibleDateDtoList.get(0).name);
         assertEquals("10/02(火)", possibleDateDtoList.get(1).name);

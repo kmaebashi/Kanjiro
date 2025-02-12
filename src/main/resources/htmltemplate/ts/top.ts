@@ -2,6 +2,8 @@ window.onload = function(e: Event): void {
   const calendarElem: HTMLElement = document.getElementById("calendar-div")!;
   const calendar: Calendar = new Calendar(calendarElem, new Date());
   calendar.render();
+
+  document.getElementById("set-deadline")!.onchange = changeDeadlineCheck;
   calendar.setDatePickedCallback(datePickedCallback);
 
   document.getElementById("apply-button")!.onclick = createEventButtonClicked;
@@ -22,6 +24,13 @@ async function createEventButtonClicked(e: Event) {
   }
   const eventDescription: string
     = (document.getElementById("event-description")! as HTMLInputElement).value;
+  const deadlineCheck: HTMLInputElement
+                    = document.getElementById("set-deadline")! as HTMLInputElement;
+  const eventDeadline: string | null = getEventDeadline();
+  if (deadlineCheck.checked && eventDeadline == null) {
+    alert("締め切りを入力してください。");
+    return;
+  }
   const appendTime: string
     = (document.getElementById("schedule-append-time")! as HTMLInputElement).value;
   const scheduleText: string
@@ -42,6 +51,7 @@ async function createEventButtonClicked(e: Event) {
     organizerName: organizerName,
     eventName: eventName,
     eventDescription: eventDescription,
+    eventDeadline: eventDeadline,
     scheduleArray: scheduleArrayRet[0],
     appendTime: appendTime,
     isSecretMode: isSecretMode,

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,7 +55,7 @@ class EventDbAccessTest {
         DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
 
         EventDbAccess.insertEvent(invoker, "INSERTTEST001", "幹事さん", "ORGANIZER001", "なんとか会",
-                "たのしみましょう", "19:00～", true, false);
+                "たのしみましょう", LocalDateTime.of(2025, 1, 31, 23, 59), "19:00～", true, false);
 
         EventDto dto = EventDbAccess.getEvent(invoker, "INSERTTEST001");
 

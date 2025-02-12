@@ -12,6 +12,7 @@ window.onload = function (e) {
     const calendarElem = document.getElementById("calendar-div");
     const calendar = new Calendar(calendarElem, new Date());
     calendar.render();
+    document.getElementById("set-deadline").onchange = changeDeadlineCheck;
     calendar.setDatePickedCallback(datePickedCallback);
     document.getElementById("apply-button").onclick = createEventButtonClicked;
 };
@@ -28,6 +29,12 @@ function createEventButtonClicked(e) {
             return;
         }
         const eventDescription = document.getElementById("event-description").value;
+        const deadlineCheck = document.getElementById("set-deadline");
+        const eventDeadline = getEventDeadline();
+        if (deadlineCheck.checked && eventDeadline == null) {
+            alert("締め切りを入力してください。");
+            return;
+        }
         const appendTime = document.getElementById("schedule-append-time").value;
         const scheduleText = document.getElementById("schedule-textarea").value;
         const isSecretMode = document.getElementById("is-secret-mode").checked;
@@ -42,6 +49,7 @@ function createEventButtonClicked(e) {
             organizerName: organizerName,
             eventName: eventName,
             eventDescription: eventDescription,
+            eventDeadline: eventDeadline,
             scheduleArray: scheduleArrayRet[0],
             appendTime: appendTime,
             isSecretMode: isSecretMode,

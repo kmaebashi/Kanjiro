@@ -1,5 +1,6 @@
 package com.kmaebashi.kanjiro.dbaccess;
 
+import java.time.LocalDateTime;
 import com.kmaebashi.dbutil.NamedParameterPreparedStatement;
 import com.kmaebashi.dbutil.ResultSetMapper;
 import com.kmaebashi.kanjiro.dto.DeviceDto;
@@ -12,7 +13,8 @@ import java.util.HashMap;
 public class EventDbAccess {
     public static int insertEvent(DbAccessInvoker invoker,
                                   String eventId, String organizerName, String organizerId, String eventName,
-                                  String description, String appendTime, boolean isSecretMode, boolean isAutoSchedule) {
+                                  String description, LocalDateTime deadline, String appendTime,
+                                  boolean isSecretMode, boolean isAutoSchedule) {
         return invoker.invoke((context) -> {
             String sql = """
                     INSERT INTO EVENTS (
@@ -21,6 +23,7 @@ public class EventDbAccess {
                       ORGANIZER_ID,
                       EVENT_NAME,
                       DESCRIPTION,
+                      DEADLINE,
                       SCHEDULE_APPEND_TIME,
                       IS_SECRET_MODE,
                       IS_AUTO_SCHEDULE,
@@ -32,6 +35,7 @@ public class EventDbAccess {
                       :ORGANIZER_ID,
                       :EVENT_NAME,
                       :DESCRIPTION,
+                      :DEADLINE,
                       :APPEND_TIME,
                       :IS_SECRET_MODE,
                       :IS_AUTO_SCHEDULE,
@@ -47,6 +51,7 @@ public class EventDbAccess {
             params.put("ORGANIZER_ID", organizerId);
             params.put("EVENT_NAME", eventName);
             params.put("DESCRIPTION", description);
+            params.put("DEADLINE", deadline);
             params.put("APPEND_TIME", appendTime);
             params.put("IS_SECRET_MODE", isSecretMode);
             params.put("IS_AUTO_SCHEDULE", isAutoSchedule);
@@ -79,14 +84,16 @@ public class EventDbAccess {
     }
 
     public static int updateEvent(DbAccessInvoker invoker,
-                                  String eventId, String organizerName, String eventName,
-                                  String description, String appendTime, boolean isSecretMode, boolean isAutoSchedule) {
+                                  String eventId, String organizerName, String eventName, String description,
+                                  LocalDateTime deadline, String appendTime,
+                                  boolean isSecretMode, boolean isAutoSchedule) {
         return invoker.invoke((context) -> {
             String sql = """
                     UPDATE EVENTS SET
                       ORGANIZER_NAME = :ORGANIZER_NAME,
                       EVENT_NAME = :EVENT_NAME,
                       DESCRIPTION = :DESCRIPTION,
+                      DEADLINE = :DEADLINE,
                       SCHEDULE_APPEND_TIME = :SCHEDULE_APPEND_TIME,
                       IS_SECRET_MODE = :IS_SECRET_MODE,
                       IS_AUTO_SCHEDULE = :IS_AUTO_SCHEDULE,
@@ -101,6 +108,7 @@ public class EventDbAccess {
             params.put("ORGANIZER_NAME", organizerName);
             params.put("EVENT_NAME", eventName);
             params.put("DESCRIPTION", description);
+            params.put("DEADLINE", deadline);
             params.put("SCHEDULE_APPEND_TIME", appendTime);
             params.put("IS_SECRET_MODE", isSecretMode);
             params.put("IS_AUTO_SCHEDULE", isAutoSchedule);

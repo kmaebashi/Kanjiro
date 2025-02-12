@@ -18,8 +18,6 @@ create table devices (
 create table users (
   user_id char(22) primary key,
   name varchar(32) not null,
-  login_id varchar(64),
-  password varchar(256),
   created_at timestamp not null,
   updated_at timestamp not null
 );
@@ -44,9 +42,10 @@ create table csrf_tokens (
 create table events (
   event_id char(22) primary key,
   organizer_name varchar(64) not null,
-  organizer_id char(32) not null,
+  organizer_id char(22) not null,
   event_name varchar(128) not null,
   description text not null,
+  deadline timestamp,
   fixed_date_id char(22),
   schedule_append_time varchar(64) not null,
   is_secret_mode boolean not null,
@@ -85,3 +84,10 @@ create table date_answers (
   primary key (event_id, user_id, possible_date_id)
 );
 
+create table device_passcode (
+  event_id char(22),
+  passcode char(8),
+  device_id char(22),
+  created_at timestamp not null,
+  primary key (event_id, passcode)
+);

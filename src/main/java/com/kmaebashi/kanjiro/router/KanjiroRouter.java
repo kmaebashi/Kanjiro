@@ -14,6 +14,7 @@ import com.kmaebashi.kanjiro.controller.AuthenticateController;
 import com.kmaebashi.kanjiro.controller.CsrfTokenController;
 import com.kmaebashi.kanjiro.controller.EditEventController;
 import com.kmaebashi.kanjiro.controller.GuestPageController;
+import com.kmaebashi.kanjiro.controller.LinkDevicePageController;
 import com.kmaebashi.kanjiro.controller.OrganizerController;
 import com.kmaebashi.kanjiro.controller.TopPageController;
 import com.kmaebashi.kanjiro.controller.Util;
@@ -64,6 +65,8 @@ public class KanjiroRouter extends Router {
                 return EditEventController.showPage(invoker, deviceId, nextCsrfToken);
             } else if (route == Route.GUEST) {
                 return GuestPageController.showPage(invoker, deviceId, nextCsrfToken);
+            } else if (route == Route.LINK_DEVICE) {
+                return LinkDevicePageController.showPage(invoker, deviceId, nextCsrfToken);
             }
         } else if (request.getMethod().equals("POST")) {
             this.logger.info("POST path.." + path);
@@ -77,6 +80,8 @@ public class KanjiroRouter extends Router {
                 return OrganizerController.postEventInfo(invoker, deviceId, lastCsrfToken, false);
             } else if (route == Route.POST_ANSWER_INFO) {
                 return GuestPageController.postAnswerInfo(invoker, deviceId, lastCsrfToken);
+            } else if (route == Route.POST_DEVICE_PASSCODE) {
+                return LinkDevicePageController.postDevicePasscode(invoker, deviceId, lastCsrfToken);
             }
         }
 

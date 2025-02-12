@@ -48,6 +48,7 @@ public class OrganizerPageService {
             Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
             renderBlankPage(doc);
             renderOrganizerName(context, doc, deviceId);
+            renderDeadline(context, doc, null);
 
             DocumentResult ret = new DocumentResult(doc);
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
@@ -61,10 +62,16 @@ public class OrganizerPageService {
         return invoker.invoke((context) -> {
             Path htmlPath = context.getHtmlTemplateDirectory().resolve("edit_event.html");
             Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
+
+            EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
+            if (eventDto == null) {
+                throw new BadRequestException("そのイベントはありません。");
+            }
             renderBlankPage(doc);
             renderEventUrl(context, doc, requestUrl, eventId);
             renderOrganizerName(context, doc, deviceId);
-            renderEventInfo(context, doc, eventId);
+            renderEventInfo(context, doc, eventDto);
+            renderDeadline(context, doc, eventDto);
 
             DocumentResult ret = new DocumentResult(doc);
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
@@ -98,11 +105,7 @@ public class OrganizerPageService {
         }
     }
 
-    private static void renderEventInfo(ServiceContext context, Document doc, String eventId) {
-        EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventId);
-        if (eventDto == null) {
-            throw new BadRequestException("そのイベントはありません。");
-        }
+    private static void renderEventInfo(ServiceContext context, Document doc, EventDto eventDto) {
         Element eventNameInputElem = doc.getElementById("event-name-input");
         eventNameInputElem.attr("value", eventDto.eventName);
         Element eventDescriptionElem = doc.getElementById("event-description");
@@ -110,7 +113,7 @@ public class OrganizerPageService {
         Element appendTimeInputElem = doc.getElementById("schedule-append-time");
         appendTimeInputElem.attr("value", eventDto.appendTime);
         List<PossibleDateDto> dtoList
-                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventId);
+                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventDto.eventId);
         StringBuilder scheduleTextSb = new StringBuilder();
         for (PossibleDateDto dto: dtoList) {
             scheduleTextSb.append(dto.name + "\r\n");
@@ -125,13 +128,39 @@ public class OrganizerPageService {
         autoScheduleCheckElem.attr("checked", eventDto.isAutoSchedule);
     }
 
+    private static void renderDeadline(ServiceContext context, Document doc, EventDto eventDto) {
+        Element deadlineCheck = doc.getElementById("set-deadline");
+        Element deadlineDate = doc.getElementById("deadline-date");
+        Element deadlineTime = doc.getElementById("deadline-time");
+
+        LocalDateTime deadlineLDT = null;
+        if (eventDto != null && eventDto.deadline != null) {
+            deadlineCheck.attr("checked", true);
+            deadlineLDT = eventDto.deadline;
+        } else {
+            deadlineCheck.attr("checked", false);
+            LocalDateTime nowLDT = LocalDateTime.now();
+            deadlineLDT = LocalDateTime.of(nowLDT.getYear(), nowLDT.getMonth(), nowLDT.getDayOfMonth(),
+                                           23, 59);
+        }
+        String deadlineStr = deadlineFormatter.format(deadlineLDT);
+        String[] deadlineArray = deadlineStr.split(" ");
+        deadlineDate.attr("value", deadlineArray[0]);
+        deadlineTime.attr("value", deadlineArray[1]);
+    }
+
+    private static DateTimeFormatter deadlineFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     public static PostEventInfoResult createNewEvent(ServiceInvoker invoker, String deviceId, EventInfo eventInfo) {
         return invoker.invoke((context) -> {
             String userId = DbUtil.getOrCreateUser(context, deviceId, eventInfo.organizerName);
             String eventId = UuidUtil.getUniqueId();
+
+            LocalDateTime deadline = eventInfo.eventDeadline == null
+                                        ? null : LocalDateTime.parse(eventInfo.eventDeadline, deadlineFormatter);
             EventDbAccess.insertEvent(context.getDbAccessInvoker(),
                     eventId, eventInfo.organizerName, userId,
-                    eventInfo.eventName, eventInfo.eventDescription,
+                    eventInfo.eventName, eventInfo.eventDescription, deadline,
                     eventInfo.appendTime, eventInfo.isSecretMode, eventInfo.isAutoSchedule);
 
             int displayOrder = 1;
@@ -150,7 +179,11 @@ public class OrganizerPageService {
             Logger logger = context.getLogger();
             logger.info("eventInfo.eventName.." + eventInfo.eventName);
 
+            String loginUser = AuthenticationDbAccess.getUserIdByDeviceId(context.getDbAccessInvoker(), deviceId);
             EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), eventInfo.eventId);
+            if (loginUser == null || !loginUser.equals(eventDto.organizierId)) {
+                throw new BadRequestException("認証エラー。非幹事からのイベント変更。");
+            }
             PostEventInfoResult result;
 
             List<PossibleDateDto> possibleDateDtoList
@@ -241,7 +274,7 @@ public class OrganizerPageService {
                     isFirst = false;
                     sb.append("" + userIdName.get(userId) + "さん");
                 }
-                sb.append("が、〇または△の回答をしています。\r\n");
+                sb.append("が、〇または△の回答をしています。\n");
             }
         }
 
@@ -256,8 +289,10 @@ public class OrganizerPageService {
                                           List<PossibleDateDto> possibleDateDtoList, List<AnswerDto> answerDtoList,
                                           List<DateAnswerDto> dateAnswerDtoList) {
 
+        LocalDateTime deadline = eventInfo.eventDeadline == null
+                ? null : LocalDateTime.parse(eventInfo.eventDeadline, deadlineFormatter);
         EventDbAccess.updateEvent(context.getDbAccessInvoker(), eventInfo.eventId, eventInfo.organizerName,
-                                  eventInfo.eventName, eventInfo.eventDescription, eventInfo.appendTime,
+                                  eventInfo.eventName, eventInfo.eventDescription, deadline, eventInfo.appendTime,
                                   eventInfo.isSecretMode, eventInfo.isAutoSchedule);
 
         List<String> newScheduleArray = Arrays.asList(eventInfo.scheduleArray);

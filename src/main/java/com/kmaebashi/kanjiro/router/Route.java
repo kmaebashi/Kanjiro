@@ -5,8 +5,10 @@ public enum Route {
     TOP,
     EDIT_EVENT,
     GUEST,
+    LINK_DEVICE,
     CREATE_EVENT_INFO,
     MODIFY_EVENT_INFO,
     POST_ANSWER_INFO,
+    POST_DEVICE_PASSCODE,
     NO_ROUTE
 }

@@ -20,12 +20,16 @@ public class SelectRoute {
                 return Route.EDIT_EVENT;
             } else if (path.equals("guest")) {
                 return Route.GUEST;
+            } else if (path.equals("linkdevice")) {
+                return Route.LINK_DEVICE;
             } else if (path.equals("api/createeventinfo")) {
                 return Route.CREATE_EVENT_INFO;
             } else if (path.equals("api/modifyeventinfo")) {
                 return Route.MODIFY_EVENT_INFO;
             } else if (path.equals("api/postanswerinfo")) {
                 return Route.POST_ANSWER_INFO;
+            } else if (path.equals("api/postdevicepasscode")) {
+                return Route.POST_DEVICE_PASSCODE;
             }
         } catch (Exception ex) {
             throw new BadRequestException("クエリストリングが不正です。");

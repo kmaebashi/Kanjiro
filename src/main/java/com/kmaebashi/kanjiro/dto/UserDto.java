@@ -8,10 +8,4 @@ public class UserDto {
 
     @TableColumn("NAME")
     public String name;
-
-    @TableColumn("LOGIN_ID")
-    public String loginId;
-
-    @TableColumn("PASSWORD")
-    public String password;
 }

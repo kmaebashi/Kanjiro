@@ -30,3 +30,22 @@ function scheduleToArray(textAreaStr) {
     }
     return [ret, null];
 }
+function changeDeadlineCheck(e) {
+    const deadlineCheck = document.getElementById("set-deadline");
+    const inputList = document.querySelectorAll("#event-deadline input");
+    for (const inputElem of inputList) {
+        inputElem.disabled = !deadlineCheck.checked;
+    }
+}
+function getEventDeadline() {
+    const deadlineCheck = document.getElementById("set-deadline");
+    if (!deadlineCheck.checked) {
+        return null;
+    }
+    const dateElem = document.getElementById("deadline-date");
+    const timeElem = document.getElementById("deadline-time");
+    if (dateElem.value.length === 0 || timeElem.value.length === 0) {
+        return null;
+    }
+    return dateElem.value + " " + timeElem.value;
+}
