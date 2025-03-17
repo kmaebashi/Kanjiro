@@ -15,6 +15,7 @@ window.onload = function (e) {
     document.getElementById("set-deadline").onchange = changeDeadlineCheck;
     calendar.setDatePickedCallback(datePickedCallback);
     document.getElementById("apply-button").onclick = createEventButtonClicked;
+    changeDeadlineCheck(e);
 };
 function createEventButtonClicked(e) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -52,6 +53,7 @@ function createEventButtonClicked(e) {
             eventDeadline: eventDeadline,
             scheduleArray: scheduleArrayRet[0],
             appendTime: appendTime,
+            fixedDate: null,
             isSecretMode: isSecretMode,
             isAutoSchedule: isAutoSchedule,
             registerForce: false,

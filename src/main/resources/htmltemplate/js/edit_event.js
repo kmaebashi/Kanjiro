@@ -15,6 +15,7 @@ window.onload = function (e) {
     calendar.setDatePickedCallback(datePickedCallback);
     document.getElementById("set-deadline").onchange = changeDeadlineCheck;
     document.getElementById("apply-button").onclick = editEventButtonClicked;
+    changeDeadlineCheck(e);
 };
 function editEventButtonClicked(e) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -54,6 +55,7 @@ function editEventButtonClicked(e) {
             eventDeadline: eventDeadline,
             scheduleArray: scheduleArrayRet[0],
             appendTime: appendTime,
+            fixedDate: getFixedDateId(),
             isSecretMode: isSecretMode,
             isAutoSchedule: isAutoSchedule,
             registerForce: false,
@@ -98,4 +100,21 @@ function editEventButtonClicked(e) {
             }
         }
     });
+}
+function getFixedDateId() {
+    const fixDateList = document.getElementById("fix-date-list");
+    const radioList = fixDateList.getElementsByTagName("input");
+    let selected = null;
+    for (const radio of radioList) {
+        if (radio.checked) {
+            selected = radio.value;
+        }
+    }
+    console.log("selected.." + selected);
+    if (selected === "undecided") {
+        return null;
+    }
+    else {
+        return selected;
+    }
 }

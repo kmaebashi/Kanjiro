@@ -3,12 +3,14 @@ package com.kmaebashi.kanjiro.service;
 import com.kmaebashi.dbutil.NamedParameterPreparedStatement;
 import com.kmaebashi.kanjiro.KanjiroTestUtil;
 import com.kmaebashi.kanjiro.controller.data.PossibleDatesTable;
+import com.kmaebashi.kanjiro.controller.data.UserAnswers;
 import com.kmaebashi.kanjiro.dbaccess.AnswerDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.EventDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.PossibleDateDbAccess;
 import com.kmaebashi.kanjiro.dto.AnswerDto;
 import com.kmaebashi.kanjiro.dto.EventDto;
+import com.kmaebashi.kanjiro.dto.PossibleDateDto;
 import com.kmaebashi.kanjiro.dto.UserDto;
 import com.kmaebashi.kanjiro.util.Log;
 import com.kmaebashi.nctfw.DbAccessContext;
@@ -22,13 +24,17 @@ import com.kmaebashi.nctfwimpl.ServiceContextImpl;
 import com.kmaebashi.nctfwimpl.ServiceInvokerImpl;
 import com.kmaebashi.simplelogger.Logger;
 import com.kmaebashi.simpleloggerimpl.FileLogger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -372,5 +378,49 @@ class GuestPageServiceTest {
         assertEquals(-1, pdt.userAnswers[3].answers[2]);
         assertEquals(-1, pdt.userAnswers[3].answers[3]);
         assertEquals(-1, pdt.userAnswers[3].answers[4]);
+    }
+
+    @Test
+    void renderDateFixedArea() throws Exception {
+        Path htmlPath = Path.of("./src/main/resources/htmltemplate/guest.html");
+        Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
+
+        UserAnswers[] ua = new UserAnswers[4];
+        ua[0] = new UserAnswers();
+        ua[0].userName = "参加者1";
+        ua[0].answers = new int[] {1, 2, 3};
+        ua[1] = new UserAnswers();
+        ua[1].userName = "参加者2";
+        ua[1].answers = new int[] {2, 3, 1};
+        ua[2] = new UserAnswers();
+        ua[2].userName = "参加者3";
+        ua[2].answers = new int[] {3, 1, 2};
+        ua[3] = new UserAnswers();
+        ua[3].userName = "参加者4";
+        ua[3].answers = new int[] {1, 1, 1};
+
+        PossibleDatesTable pdt = new PossibleDatesTable();
+        pdt.possibleDateNames = new String[] {"3/15(土) 19:00～", "3/22(土) 19:00～", "3/29(土) 19:00～"};
+        pdt.userAnswers = ua;
+
+        List<PossibleDateDto> possibleDateDtoList = new ArrayList<PossibleDateDto>();
+        PossibleDateDto pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id0";
+        pdDto.name = pdt.possibleDateNames[0];
+        possibleDateDtoList.add(pdDto);
+        pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id1";
+        pdDto.name = pdt.possibleDateNames[1];
+        possibleDateDtoList.add(pdDto);
+        pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id2";
+        pdDto.name = pdt.possibleDateNames[2];
+        possibleDateDtoList.add(pdDto);
+
+        GuestPageService.PossibleDatesInfo pdi = new GuestPageService.PossibleDatesInfo(pdt, possibleDateDtoList);
+        EventDto eventDto = new EventDto();
+        eventDto.fixedDateId = "id0";
+
+        GuestPageService.renderDateFixedArea(doc, eventDto, pdi);
     }
 }

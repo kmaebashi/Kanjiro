@@ -7,6 +7,7 @@ window.onload = function(e: Event): void {
   calendar.setDatePickedCallback(datePickedCallback);
 
   document.getElementById("apply-button")!.onclick = createEventButtonClicked;
+  changeDeadlineCheck(e);
 };
 
 async function createEventButtonClicked(e: Event) {
@@ -54,6 +55,7 @@ async function createEventButtonClicked(e: Event) {
     eventDeadline: eventDeadline,
     scheduleArray: scheduleArrayRet[0],
     appendTime: appendTime,
+    fixedDate: null,
     isSecretMode: isSecretMode,
     isAutoSchedule: isAutoSchedule,
     registerForce: false,

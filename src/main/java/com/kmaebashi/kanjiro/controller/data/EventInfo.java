@@ -8,6 +8,7 @@ public class EventInfo {
     public String eventDeadline;
     public String[] scheduleArray;
     public String appendTime;
+    public String fixedDate;
     public boolean isSecretMode;
     public boolean isAutoSchedule;
     public boolean registerForce;

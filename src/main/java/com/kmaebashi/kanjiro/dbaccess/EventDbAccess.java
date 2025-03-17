@@ -85,7 +85,7 @@ public class EventDbAccess {
 
     public static int updateEvent(DbAccessInvoker invoker,
                                   String eventId, String organizerName, String eventName, String description,
-                                  LocalDateTime deadline, String appendTime,
+                                  LocalDateTime deadline, String appendTime, String fixedDate,
                                   boolean isSecretMode, boolean isAutoSchedule) {
         return invoker.invoke((context) -> {
             String sql = """
@@ -94,6 +94,7 @@ public class EventDbAccess {
                       EVENT_NAME = :EVENT_NAME,
                       DESCRIPTION = :DESCRIPTION,
                       DEADLINE = :DEADLINE,
+                      FIXED_DATE_ID = :FIXED_DATE_ID,
                       SCHEDULE_APPEND_TIME = :SCHEDULE_APPEND_TIME,
                       IS_SECRET_MODE = :IS_SECRET_MODE,
                       IS_AUTO_SCHEDULE = :IS_AUTO_SCHEDULE,
@@ -109,6 +110,7 @@ public class EventDbAccess {
             params.put("EVENT_NAME", eventName);
             params.put("DESCRIPTION", description);
             params.put("DEADLINE", deadline);
+            params.put("FIXED_DATE_ID", fixedDate);
             params.put("SCHEDULE_APPEND_TIME", appendTime);
             params.put("IS_SECRET_MODE", isSecretMode);
             params.put("IS_AUTO_SCHEDULE", isAutoSchedule);

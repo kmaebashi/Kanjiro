@@ -57,7 +57,7 @@ input[type="checkbox"] {
 
 header {
   background-color: #e06d15;
-  height: 60px;
+  min-height: 60px;
   color: #ffffff;
   padding-top: 5px;
 }
@@ -102,12 +102,18 @@ header section a.page-title {
   float: left;
 }
 
+.clearfix:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
 header section p.link-device-line {
   text-align: right;
 }
 
 footer {
-  height: 30px;
+  min-height: 30px;
   padding-top: 5px;
   color: white;
   background-color: #e06d15;

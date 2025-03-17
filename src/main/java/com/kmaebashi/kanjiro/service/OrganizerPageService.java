@@ -70,8 +70,11 @@ public class OrganizerPageService {
             renderBlankPage(doc);
             renderEventUrl(context, doc, requestUrl, eventId);
             renderOrganizerName(context, doc, deviceId);
-            renderEventInfo(context, doc, eventDto);
+            List<PossibleDateDto> possibleDateDtoList
+                    = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventDto.eventId);
+            renderEventInfo(context, doc, eventDto, possibleDateDtoList);
             renderDeadline(context, doc, eventDto);
+            renderFixDateArea(context, doc, eventDto, possibleDateDtoList);
 
             DocumentResult ret = new DocumentResult(doc);
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
@@ -105,17 +108,17 @@ public class OrganizerPageService {
         }
     }
 
-    private static void renderEventInfo(ServiceContext context, Document doc, EventDto eventDto) {
+    private static void renderEventInfo(ServiceContext context, Document doc, EventDto eventDto,
+                                        List<PossibleDateDto> possibleDateDtoList) {
         Element eventNameInputElem = doc.getElementById("event-name-input");
         eventNameInputElem.attr("value", eventDto.eventName);
         Element eventDescriptionElem = doc.getElementById("event-description");
         eventDescriptionElem.text(eventDto.description);
         Element appendTimeInputElem = doc.getElementById("schedule-append-time");
         appendTimeInputElem.attr("value", eventDto.appendTime);
-        List<PossibleDateDto> dtoList
-                = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventDto.eventId);
+
         StringBuilder scheduleTextSb = new StringBuilder();
-        for (PossibleDateDto dto: dtoList) {
+        for (PossibleDateDto dto: possibleDateDtoList) {
             scheduleTextSb.append(dto.name + "\r\n");
         }
         Element scheduleTextElem = doc.getElementById("schedule-textarea");
@@ -147,6 +150,31 @@ public class OrganizerPageService {
         String[] deadlineArray = deadlineStr.split(" ");
         deadlineDate.attr("value", deadlineArray[0]);
         deadlineTime.attr("value", deadlineArray[1]);
+    }
+
+    private static void renderFixDateArea(ServiceContext context, Document doc, EventDto eventDto,
+                                          List<PossibleDateDto> possibleDateDtoList) {
+        Element ulElem = doc.getElementById("fix-date-list");
+
+        Element firstLiElem = ulElem.getElementsByTag("li").first();
+        ulElem.empty();
+
+        Element undecidedLiElem = firstLiElem.clone();
+        setFixDateLi(undecidedLiElem, "undecided", "未定", eventDto.fixedDateId == null);
+        ulElem.appendChild(undecidedLiElem);
+
+        for (PossibleDateDto dto : possibleDateDtoList) {
+            Element liElem = firstLiElem.clone();
+            setFixDateLi(liElem, dto.possibleDateId, dto.name, dto.possibleDateId.equals(eventDto.fixedDateId));
+            ulElem.appendChild(liElem);
+        }
+    }
+
+    private static void setFixDateLi(Element liElem, String possibleDateKey, String possibleDateName, boolean selected) {
+        Element inputElem = liElem.getElementsByTag("input").first();
+        inputElem.attr("value", possibleDateKey);
+        inputElem.attr("checked", selected);
+        liElem.getElementsByClass("date-name").first().text(possibleDateName);
     }
 
     private static DateTimeFormatter deadlineFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -206,7 +234,7 @@ public class OrganizerPageService {
                 }
             } else {
                 result = mergeEvent(context, eventInfo, possibleDateDtoList, answerDtoList,
-                        dateAnswerDtoList);
+                                    dateAnswerDtoList);
             }
             return result;
         });
@@ -293,7 +321,7 @@ public class OrganizerPageService {
                 ? null : LocalDateTime.parse(eventInfo.eventDeadline, deadlineFormatter);
         EventDbAccess.updateEvent(context.getDbAccessInvoker(), eventInfo.eventId, eventInfo.organizerName,
                                   eventInfo.eventName, eventInfo.eventDescription, deadline, eventInfo.appendTime,
-                                  eventInfo.isSecretMode, eventInfo.isAutoSchedule);
+                                  eventInfo.fixedDate, eventInfo.isSecretMode, eventInfo.isAutoSchedule);
 
         List<String> newScheduleArray = Arrays.asList(eventInfo.scheduleArray);
         for (PossibleDateDto pd : possibleDateDtoList) {

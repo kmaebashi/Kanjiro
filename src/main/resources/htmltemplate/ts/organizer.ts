@@ -23,6 +23,7 @@ type EventInfo = {
   eventDeadline: string | null;
   scheduleArray: string[];
   appendTime: string;
+  fixedDate: string | null;
   isSecretMode: boolean;
   isAutoSchedule: boolean;
   registerForce: boolean;

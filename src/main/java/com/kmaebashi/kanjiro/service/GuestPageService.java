@@ -54,7 +54,8 @@ public class GuestPageService {
             UserDto deviceUser = AuthenticationDbAccess.getUserByDeviceId(context.getDbAccessInvoker(), deviceId);
             PossibleDatesInfo pdi = getPossibleDatesTable(context, eventDto, deviceUser, answerDtoList);
             setPossibleDatesTable(pdi.pdt(), doc);
-            renderAnswerArea(context, doc, pdi.pdt(), answerDtoList, userId, deviceUser, pdi.possibleInfoDtoList());
+            renderDateFixedArea(doc, eventDto, pdi);
+            renderAnswerArea(context, doc, pdi.pdt(), answerDtoList, userId, deviceUser, pdi.possibleDateDtoList());
 
             CsrfUtil.addCsrfToken(ret, nextCsrfToken);
 
@@ -99,12 +100,13 @@ public class GuestPageService {
         return answerDtoList;
     }
 
-    record PossibleDatesInfo(PossibleDatesTable pdt, List<PossibleDateDto> possibleInfoDtoList) {}
+    record PossibleDatesInfo(PossibleDatesTable pdt, List<PossibleDateDto> possibleDateDtoList) {}
     static PossibleDatesInfo getPossibleDatesTable(ServiceContext context, EventDto eventDto, UserDto deviceUser,
                                                    List<AnswerDto> answerDtoList) {
         List<PossibleDateDto> possibleDateDtoList
                 = PossibleDateDbAccess.getPossbleDates(context.getDbAccessInvoker(), eventDto.eventId);
         HashMap<String, Integer> possibleDateIdToIndex = new HashMap<>();
+
         HashMap<String, Integer> userIdToIndex = new HashMap<>();
 
         PossibleDatesTable pdt = new PossibleDatesTable();
@@ -153,6 +155,38 @@ public class GuestPageService {
         scriptElem.text("const possibleDatesTable = " + pdtJson);
         Element pdtTableElem = doc.getElementById("possible-dates-table");
         pdtTableElem.empty();
+    }
+
+    static void renderDateFixedArea(Document doc, EventDto eventDto, PossibleDatesInfo pdi) {
+        Element dateFixedAreaDivElem = doc.getElementById("date-fixed-area");
+        if (eventDto.fixedDateId == null) {
+            dateFixedAreaDivElem.remove();
+            return;
+        }
+        int possibleDateIdx = 0;
+        for (; possibleDateIdx < pdi.possibleDateDtoList().size(); possibleDateIdx++) {
+            if (pdi.possibleDateDtoList().get(possibleDateIdx).possibleDateId.equals(eventDto.fixedDateId)) {
+                break;
+            }
+        }
+        Element fixedDatePElem = dateFixedAreaDivElem.getElementById("fixed-date-p");
+        fixedDatePElem.text(pdi.possibleDateDtoList().get(possibleDateIdx).name);
+
+        Element guestListElem = dateFixedAreaDivElem.getElementById("guest-list");
+        Element firstLiElem = guestListElem.getElementsByTag("li").first();
+        guestListElem.empty();
+
+        String[] answerStr = {"〇", "△", "×"};
+        for (int ansIdx = 1; ansIdx <= 3; ansIdx++) {
+            for (int userIdx = 0; userIdx < pdi.pdt().userAnswers.length; userIdx++) {
+                int answer = pdi.pdt().userAnswers[userIdx].answers[possibleDateIdx];
+                if (answer == ansIdx) {
+                    Element liElem = firstLiElem.clone();
+                    liElem.text(answerStr[answer - 1] + " " + pdi.pdt().userAnswers[userIdx].userName);
+                    guestListElem.appendChild(liElem);
+                }
+            }
+        }
     }
 
     static void renderAnswerArea(ServiceContext context, Document doc, PossibleDatesTable pdt,

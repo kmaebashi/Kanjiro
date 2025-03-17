@@ -61,6 +61,15 @@ dd {
   margin-bottom: 0.5em;
 }
 
+ol {
+  list-style-position: inside;
+  list-style-type: decimal;
+}
+
+li {
+  all: revert;
+}
+
 #organizer-name-line {
   margin-bottom: 10px;
 }
@@ -117,14 +126,14 @@ table td.count {
 }
 
 div.reply-button-div {
-  height: 100px;
+  min-height: 100px;
   padding-top: 10px;
   text-align: center;
 }
 
 button#reply-button {
   width: 60%;
-  height: 60px;
+  min-height: 60px;
   text-align: center;
   vertical-align: middle;
   font-weight: bold;
@@ -144,8 +153,8 @@ button#reply-button {
 
 #reply-table label {
   display: inline-block;
-  width: 50px;
-  height: 50px;
+  min-width: 50px;
+  min-height: 50px;
   margin: 5px;
   font-size: 30px;
   padding: 5px;

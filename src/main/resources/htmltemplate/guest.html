@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="css/destyle.css">
-<link rel="stylesheet" href="css/kanjiro.css">
-<link rel="stylesheet" href="css/kanjiro_guest.css">
-<script src="js/common.js"></script>
-<script src="js/guest.js"></script>
-<title>幹事郎 ―― Webでスケジュール調整</title>
+<link rel="stylesheet" href="css/kanjiro.css?202503082143">
+<link rel="stylesheet" href="css/kanjiro_guest.css?202502122350">
+<script src="js/common.js?202502122350"></script>
+<script src="js/guest.js?202502122350"></script>
+<title>参加者用ページ ―― 幹事郎</title>
 </head>
 <body>
 <script id="server-side-include-script"></script>
 <header>
-  <section>
+  <section class="clearfix">
     <h1><a id="page-title" class="page-title" href="#">幹事郎</a></h1>
     <p class="link-device-line"><a id="link-device-a" href="#">デバイスを紐づける</a></p>
   </section>
@@ -33,6 +33,18 @@
 それではよろしくお願いいたします。
 </p>
 <p id="deadline-line"><span class="title">日程解答の締め切り</span><span id="deadline-date">2025年01月31日(金) 23:59</span></p>
+<div id="date-fixed-area">
+<h3>決定した日程</h3>
+<p>日程は以下に決定しました</p>
+<p id="fixed-date-p">3/6(木) 19:00～</p>
+<h3>参加予定者</h3>
+<p>※当日の回答が〇の方から表示しています。</p>
+<ol type="1" id="guest-list">
+<li>〇 幹事 二郎
+<li>〇 ふんどし仮面
+<li>〇 凍てつく道化師青井
+</ol>
+</div>
 <h3>回答いただいた方</h3>
 <p>※回答順です</p>
 <dl id="message-list">

@@ -6,6 +6,7 @@ window.onload = function(e: Event): void {
 
   document.getElementById("set-deadline")!.onchange = changeDeadlineCheck;
   document.getElementById("apply-button")!.onclick = editEventButtonClicked;
+  changeDeadlineCheck(e);
 };
 
 async function editEventButtonClicked(e: Event) {
@@ -55,6 +56,7 @@ async function editEventButtonClicked(e: Event) {
     eventDeadline: eventDeadline,
     scheduleArray: scheduleArrayRet[0],
     appendTime: appendTime,
+    fixedDate: getFixedDateId(),
     isSecretMode: isSecretMode,
     isAutoSchedule: isAutoSchedule,
     registerForce: false,
@@ -99,3 +101,21 @@ async function editEventButtonClicked(e: Event) {
   }
 }
 
+function getFixedDateId(): string | null {
+  const fixDateList: Element = document.getElementById("fix-date-list")!;
+  const radioList: HTMLCollection = fixDateList.getElementsByTagName("input");
+  
+  let selected :string | null = null;
+  for (const radio of radioList) {
+    if ((radio as HTMLInputElement).checked) {
+      selected = (radio as HTMLInputElement).value;
+    }
+  }
+  console.log("selected.." + selected);
+
+  if (selected === "undecided") {
+    return null;
+  } else {
+    return selected;
+  }
+}
