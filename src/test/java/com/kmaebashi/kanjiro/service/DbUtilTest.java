@@ -2,6 +2,8 @@ package com.kmaebashi.kanjiro.service;
 
 import com.kmaebashi.dbutil.NamedParameterPreparedStatement;
 import com.kmaebashi.kanjiro.KanjiroTestUtil;
+import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
+import com.kmaebashi.kanjiro.dto.UserDto;
 import com.kmaebashi.kanjiro.util.Log;
 import com.kmaebashi.nctfw.DbAccessContext;
 import com.kmaebashi.nctfw.DbAccessInvoker;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,19 +37,10 @@ class DbUtilTest {
         deleteAll();
     }
 
-    private static void deleteAll() {
+    private static void deleteAll() throws Exception {
         DbAccessContext context = new DbAccessContextImpl(conn, logger);
-        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
-
-        invoker.invoke((localContext) -> {
-            String sql = "DELETE FROM USERS";
-
-            NamedParameterPreparedStatement npps
-                    = NamedParameterPreparedStatement.newInstance(context.getConnection(), sql);
-            int result = npps.getPreparedStatement().executeUpdate();
-
-            return result;
-        });
+        KanjiroTestUtil.deleteAll(context, "USERS");
+        KanjiroTestUtil.deleteAll(context, "DEVICES");
     }
 
     @AfterAll
@@ -62,7 +56,29 @@ class DbUtilTest {
                 Paths.get("./src/main/resources/htmltemplate"),
                 logger);
 
-        String userId = DbUtil.getOrCreateUser(sc, "gOCreateUserTest001Dev", "gOCreateUserTest001User");
+        AuthenticationDbAccess.upsertDevice(invoker, "gOCreateUserTest001Dev", LocalDateTime.now(),
+                                            "getOrCreateUserTest001DeviceId__");
+        String userId  = DbUtil.getOrCreateUser(sc, "gOCreateUserTest001Dev", "gOCreateUserTest01User1");
+        String userId2 = DbUtil.getOrCreateUser(sc, "gOCreateUserTest001Dev", "gOCreateUserTest01User2");
+        assertEquals(userId, userId2);
+        UserDto userDto = AuthenticationDbAccess.getUserByDeviceId(invoker, "gOCreateUserTest001Dev");
+        assertEquals("gOCreateUserTest01User2", userDto.name);
+    }
 
+    @Test
+    void getOrCreateUserTest002() {
+        DbAccessContext dc = new DbAccessContextImpl(this.conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(dc);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+
+        AuthenticationDbAccess.upsertDevice(invoker, "gOCreateUserTest002Dev", LocalDateTime.now(),
+                                            "getOrCreateUserTest002DeviceId__");
+        String userId  = DbUtil.getOrCreateUser(sc, "gOCreateUserTest002Dev", "gOCreateUserTest01User1");
+        String userId2 = DbUtil.getOrCreateUser(sc, "gOCreateUserTest002Dev", "gOCreateUserTest01User1");
+        assertEquals(userId, userId2);
+        UserDto userDto = AuthenticationDbAccess.getUserByDeviceId(invoker, "gOCreateUserTest002Dev");
+        assertEquals("gOCreateUserTest01User1", userDto.name);
     }
 }

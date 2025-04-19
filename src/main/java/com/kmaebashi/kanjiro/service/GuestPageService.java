@@ -1,6 +1,8 @@
 package com.kmaebashi.kanjiro.service;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,11 +50,17 @@ public class GuestPageService {
             if (eventDto == null) {
                 throw new BadRequestException("そのイベントはありません。");
             }
-            HeaderRenderer.renderLinkDevice(doc, eventId);
-            renderEventInfo(context, doc, eventDto);
-            List<AnswerDto> answerDtoList = renderMessageArea(context, doc, eventId);
+            List<AnswerDto> answerDtoList = AnswerDbAccess.getAnswers(context.getDbAccessInvoker(), eventId);
             UserDto deviceUser = AuthenticationDbAccess.getUserByDeviceId(context.getDbAccessInvoker(), deviceId);
             PossibleDatesInfo pdi = getPossibleDatesTable(context, eventDto, deviceUser, answerDtoList);
+            if (eventDto.isAutoSchedule && eventDto.fixedDateId == null
+                    && eventDto.deadline.isAfter(LocalDateTime.now())) {
+                eventDto.fixedDateId = makeSchedule(pdi);
+            }
+
+            HeaderRenderer.renderLinkDevice(doc, eventId);
+            renderEventInfo(context, doc, eventDto);
+            renderMessageArea(doc, answerDtoList);
             setPossibleDatesTable(pdi.pdt(), doc);
             renderDateFixedArea(doc, eventDto, pdi);
             renderAnswerArea(context, doc, pdi.pdt(), answerDtoList, userId, deviceUser, pdi.possibleDateDtoList());
@@ -82,8 +90,7 @@ public class GuestPageService {
         }
     }
 
-    private static List<AnswerDto> renderMessageArea(ServiceContext context, Document doc, String eventId) {
-        List<AnswerDto> answerDtoList = AnswerDbAccess.getAnswers(context.getDbAccessInvoker(), eventId);
+    private static void renderMessageArea(Document doc, List<AnswerDto> answerDtoList) {
 
         Element dlElem = doc.getElementById("message-list");
         dlElem.empty();
@@ -97,10 +104,9 @@ public class GuestPageService {
             ddElem.html(HtmlUtil.escapeHtml2(dto.message));
             dlElem.appendChild(ddElem);
         }
-        return answerDtoList;
     }
 
-    record PossibleDatesInfo(PossibleDatesTable pdt, List<PossibleDateDto> possibleDateDtoList) {}
+    record PossibleDatesInfo(PossibleDatesTable pdt, List<PossibleDateDto> possibleDateDtoList, String[] guestList) {}
     static PossibleDatesInfo getPossibleDatesTable(ServiceContext context, EventDto eventDto, UserDto deviceUser,
                                                    List<AnswerDto> answerDtoList) {
         List<PossibleDateDto> possibleDateDtoList
@@ -146,7 +152,29 @@ public class GuestPageService {
                 }
             }
         }
-        return new PossibleDatesInfo(pdt, possibleDateDtoList);
+        String[] guestList = null;
+        if (eventDto.fixedDateId != null) {
+            guestList = createGuestList(answerDtoList, dateAnswerDtoList, eventDto.fixedDateId);
+        }
+        return new PossibleDatesInfo(pdt, possibleDateDtoList, guestList);
+    }
+
+    private static String[] createGuestList(List<AnswerDto> answerDtoList, List<DateAnswerDto> dateAnswerDtoList,
+                                            String fixedDateId) {
+        HashMap<String, String> userNameHash = new HashMap<>();
+        for (AnswerDto ansDto : answerDtoList) {
+            userNameHash.put(ansDto.userId, ansDto.userName);
+        }
+        List<String> guestList = new ArrayList<String>();
+        String[] answerStr = {"〇", "△", "×"};
+        for (int ansIdx = 1; ansIdx <= 3; ansIdx++) {
+            for (DateAnswerDto dateAnsDto : dateAnswerDtoList) {
+                if (dateAnsDto.answer == ansIdx && dateAnsDto.possibleDateId.equals(fixedDateId)) {
+                    guestList.add(answerStr[ansIdx - 1] + "　" + userNameHash.get(dateAnsDto.userId));
+                }
+            }
+        }
+        return guestList.toArray(new String[0]);
     }
 
     static void setPossibleDatesTable(PossibleDatesTable pdt, Document doc) {
@@ -176,16 +204,10 @@ public class GuestPageService {
         Element firstLiElem = guestListElem.getElementsByTag("li").first();
         guestListElem.empty();
 
-        String[] answerStr = {"〇", "△", "×"};
-        for (int ansIdx = 1; ansIdx <= 3; ansIdx++) {
-            for (int userIdx = 0; userIdx < pdi.pdt().userAnswers.length; userIdx++) {
-                int answer = pdi.pdt().userAnswers[userIdx].answers[possibleDateIdx];
-                if (answer == ansIdx) {
-                    Element liElem = firstLiElem.clone();
-                    liElem.text(answerStr[answer - 1] + " " + pdi.pdt().userAnswers[userIdx].userName);
-                    guestListElem.appendChild(liElem);
-                }
-            }
+        for (String guestStr : pdi.guestList) {
+            Element liElem = firstLiElem.clone();
+            liElem.text(guestStr);
+            guestListElem.appendChild(liElem);
         }
     }
 
@@ -260,6 +282,94 @@ public class GuestPageService {
             }
         }
         throw new InternalException("回答が見つかりません。");
+    }
+
+    public static String makeSchedule(PossibleDatesInfo pdi) {
+        List<Integer> maxOkDateIdxes = getMaxOkPossibleDates(pdi.pdt());
+        if (maxOkDateIdxes == null) {
+            return null;
+        }
+        List<Integer> maxUnknownDateIdxes = getMaxUnknownPossibleDates(pdi.pdt(), maxOkDateIdxes);
+        List<Integer> maxScoreIdxes = getMaxScorePossibleDates(pdi.pdt(), maxUnknownDateIdxes);
+
+        int dateIdx = maxScoreIdxes.get(0);
+
+        return pdi.possibleDateDtoList.get(dateIdx).possibleDateId;
+    }
+
+    private static List<Integer> getMaxOkPossibleDates(PossibleDatesTable pdt) {
+        List<Integer> maxPds = null;
+        int maxOk = 0;
+
+        for (int i = 0; i < pdt.possibleDateNames.length; i++) {
+            int okCount = countDateAnswer(pdt, i, 1); // 1は○
+            if (okCount > maxOk) {
+                maxOk = okCount;
+                maxPds = new ArrayList<>();
+                maxPds.add(i);
+            } else if (maxPds != null && okCount == maxOk) {
+                maxPds.add(i);
+            }
+        }
+        return maxPds;
+    }
+
+    private static List<Integer> getMaxUnknownPossibleDates(PossibleDatesTable pdt, List<Integer> maxOkDateIdxes) {
+        List<Integer> maxPds = null;
+        int maxUnknown = -1;
+
+        for (int dateIdx : maxOkDateIdxes) {
+            int unknownCount = countDateAnswer(pdt, dateIdx, 2); // 2は△
+            if (unknownCount > maxUnknown) {
+                maxUnknown = unknownCount;
+                maxPds = new ArrayList<>();
+                maxPds.add(dateIdx);
+            } else if (maxPds != null && unknownCount == maxUnknown) {
+                maxPds.add(dateIdx);
+            }
+        }
+        return maxPds;
+    }
+
+    private static int countDateAnswer(PossibleDatesTable pdt, int dateIdx, int answer) {
+        int count = 0;
+
+        for (int userIdx = 0; userIdx < pdt.userAnswers.length; userIdx++) {
+            if (pdt.userAnswers[userIdx].answers[dateIdx] == answer) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static List<Integer> getMaxScorePossibleDates(PossibleDatesTable pdt, List<Integer> dateIdxes) {
+        List<Integer> maxPds = null;
+        int maxScore = -1;
+
+        for (int dateIdx : dateIdxes) {
+            int dateScore = calcDateScore(pdt, dateIdx);
+            if (dateScore > maxScore) {
+                maxScore = dateScore;
+                maxPds = new ArrayList<>();
+                maxPds.add(dateIdx);
+            } else if (maxPds != null && dateScore == maxScore) {
+                maxPds.add(dateIdx);
+            }
+        }
+        return maxPds;
+    }
+
+    private static int calcDateScore(PossibleDatesTable pdt, int dateIdx) {
+        int score = 0;
+
+        for (int userIdx = 0; userIdx < pdt.userAnswers.length; userIdx++) {
+            if (pdt.userAnswers[userIdx].answers[dateIdx] == 1) {
+                score += pdt.userAnswers.length - userIdx;
+            }
+        }
+
+        return score;
     }
 
     public static JsonResult postAnswerInfo(ServiceInvoker invoker, String deviceId, AnswerInfo answerInfo) {

@@ -1,6 +1,8 @@
 package com.kmaebashi.kanjiro.service;
 
 public class HtmlUtil {
+    private HtmlUtil() {}
+
     static String escapeHtml(String src) {
         return src.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&#39;");
     }

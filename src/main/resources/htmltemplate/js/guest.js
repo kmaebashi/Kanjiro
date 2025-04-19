@@ -26,7 +26,12 @@ function renderPossibleDatesTable() {
     }
     if (mediaQueryList.matches) {
         // PC表示
-        renderPossibleDatesTableDayRow(tableElem);
+        if (possibleDatesTable.userAnswers.length > 8) {
+            renderPossibleDatesTableUserRow(tableElem);
+        }
+        else {
+            renderPossibleDatesTableDayRow(tableElem);
+        }
     }
     else {
         // スマホ表示
@@ -34,7 +39,12 @@ function renderPossibleDatesTable() {
     }
 }
 const markTable = ["〇", "△", "×"];
+const FIX_WIDTH_COLS = 8;
 function renderPossibleDatesTableDayRow(tableElem) {
+    const fixWidthFlag = (possibleDatesTable.userAnswers.length + 3) <= FIX_WIDTH_COLS;
+    if (!fixWidthFlag) {
+        tableElem.style.width = "100%";
+    }
     const headerTr = document.createElement("tr");
     tableElem.appendChild(headerTr);
     const headerTh1 = document.createElement("th");
@@ -55,6 +65,9 @@ function renderPossibleDatesTableDayRow(tableElem) {
     headerTr.appendChild(headerTh4);
     for (let userIdx = 0; userIdx < possibleDatesTable.userAnswers.length; userIdx++) {
         const userNameTh = createUserNameTh(possibleDatesTable.userAnswers[userIdx]);
+        if (fixWidthFlag) {
+            userNameTh.style.width = "5em";
+        }
         headerTr.appendChild(userNameTh);
     }
     for (let dateIdx = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
@@ -84,13 +97,21 @@ function renderPossibleDatesTableDayRow(tableElem) {
     }
 }
 function renderPossibleDatesTableUserRow(tableElem) {
+    const fixWidthFlag = possibleDatesTable.possibleDateNames.length <= FIX_WIDTH_COLS;
+    if (!fixWidthFlag) {
+        tableElem.style.width = "100%";
+    }
     const headerTr = document.createElement("tr");
     tableElem.appendChild(headerTr);
     const headerTh1 = document.createElement("th");
     headerTh1.innerText = "参加者";
+    headerTh1.style.width = "6em";
     headerTr.appendChild(headerTh1);
     for (let dateIdx = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
         const dateTh = document.createElement("th");
+        if (fixWidthFlag) {
+            dateTh.style.width = "5em";
+        }
         dateTh.innerText = possibleDatesTable.possibleDateNames[dateIdx];
         headerTr.appendChild(dateTh);
     }

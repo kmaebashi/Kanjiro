@@ -162,7 +162,6 @@ td.calendar-right-arrow {
 }
 
 td.calendar-date {
-  width: 2em;
   text-align: center;
   cursor: pointer;
 }

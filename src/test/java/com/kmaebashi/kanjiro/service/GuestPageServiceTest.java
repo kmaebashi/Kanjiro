@@ -119,6 +119,8 @@ class GuestPageServiceTest {
         EventDbAccess.insertEvent(invoker, eventId, "幹事太郎", "GuestPageSTestOUser001",
                 "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。", LocalDateTime.of(2025, 1, 31, 23, 59),
                 "19:00～", true, false);
+        EventDbAccess.updateEvent(invoker, eventId, "幹事太郎", "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。",
+                                  LocalDateTime.of(2025, 1, 31, 23, 59),  "19:00～", "GuestPageTestPD003__02", true, false);
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD001__02", eventId, "10/01(月)", 1);
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD002__02", eventId, "10/02(火)", 2);
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD003__02", eventId, "10/03(水)", 3);
@@ -152,6 +154,7 @@ class GuestPageServiceTest {
         AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD003__02", 3);
         AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD004__02", 1);
         AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD005__02", 2);
+
     }
 
     @AfterAll
@@ -378,6 +381,11 @@ class GuestPageServiceTest {
         assertEquals(-1, pdt.userAnswers[3].answers[2]);
         assertEquals(-1, pdt.userAnswers[3].answers[3]);
         assertEquals(-1, pdt.userAnswers[3].answers[4]);
+
+        assertEquals("×　幹事太郎3", pdi.guestList()[0]);
+        assertEquals("×　ゲスト1_", pdi.guestList()[1]);
+        assertEquals("×　ゲスト2_", pdi.guestList()[2]);
+        assertEquals("×　ゲスト3_", pdi.guestList()[3]);
     }
 
     @Test
@@ -417,10 +425,55 @@ class GuestPageServiceTest {
         pdDto.name = pdt.possibleDateNames[2];
         possibleDateDtoList.add(pdDto);
 
-        GuestPageService.PossibleDatesInfo pdi = new GuestPageService.PossibleDatesInfo(pdt, possibleDateDtoList);
+        GuestPageService.PossibleDatesInfo pdi = new GuestPageService.PossibleDatesInfo(pdt, possibleDateDtoList, new String[0]);
         EventDto eventDto = new EventDto();
         eventDto.fixedDateId = "id0";
 
         GuestPageService.renderDateFixedArea(doc, eventDto, pdi);
+    }
+
+    @Test
+    void makeScheduleTest001() {
+        //     User1 User2 User3 User4
+        // 4/1 ×　　　×　　　×　　　×　
+        // 4/2 ○　　　○　　　×     ○　　　　
+        // 4/3 ○　　　○　　　○     △　
+        // 4/4 ○　　　○　　　△     ○　
+
+        PossibleDatesTable pdt = new PossibleDatesTable();
+        pdt.possibleDateNames = new String[] {
+            "4/1(火) 19:00～", "4/2(水) 19:00～", "4/3(木) 19:00～", "4/4(金) 19:00～"
+        };
+        pdt.userAnswers = new UserAnswers[4];
+        pdt.userAnswers[0] = new UserAnswers();
+        pdt.userAnswers[0].userName = "User1";
+        pdt.userAnswers[0].answers = new int[] {3, 1, 1, 1};
+        pdt.userAnswers[1] = new UserAnswers();
+        pdt.userAnswers[1].userName = "User2";
+        pdt.userAnswers[1].answers = new int[] {3, 1, 1, 1};
+        pdt.userAnswers[2] = new UserAnswers();
+        pdt.userAnswers[2].userName = "User3";
+        pdt.userAnswers[2].answers = new int[] {3, 3, 1, 2};
+        pdt.userAnswers[3] = new UserAnswers();
+        pdt.userAnswers[3].userName = "User4";
+        pdt.userAnswers[3].answers = new int[] {3, 1, 2, 1};
+
+        List<PossibleDateDto> pdDtoList = new ArrayList<PossibleDateDto>();
+        PossibleDateDto pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id1";
+        pdDtoList.add(pdDto);
+        pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id2";
+        pdDtoList.add(pdDto);
+        pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id3";
+        pdDtoList.add(pdDto);
+        pdDto = new PossibleDateDto();
+        pdDto.possibleDateId = "id4";
+        pdDtoList.add(pdDto);
+        GuestPageService.PossibleDatesInfo pdi = new GuestPageService.PossibleDatesInfo(pdt, pdDtoList, null);
+        String pdId = GuestPageService.makeSchedule(pdi);
+
+        assertEquals("id3", pdId);
     }
 }

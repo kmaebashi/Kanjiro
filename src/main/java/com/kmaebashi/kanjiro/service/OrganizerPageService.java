@@ -67,6 +67,10 @@ public class OrganizerPageService {
             if (eventDto == null) {
                 throw new BadRequestException("そのイベントはありません。");
             }
+            String deviceUserId = AuthenticationDbAccess.getUserIdByDeviceId(context.getDbAccessInvoker(), deviceId);
+            if (!deviceUserId.equals(eventDto.organizierId)) {
+                throw new BadRequestException("イベントの編集ページは幹事でなければ見られません。");
+            }
             renderBlankPage(doc);
             renderEventUrl(context, doc, requestUrl, eventId);
             renderOrganizerName(context, doc, deviceId);

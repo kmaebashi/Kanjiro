@@ -37,7 +37,11 @@ function renderPossibleDatesTable(): void {
 
   if (mediaQueryList.matches) {
     // PC表示
-    renderPossibleDatesTableDayRow(tableElem);
+    if (possibleDatesTable.userAnswers.length > 8) {
+      renderPossibleDatesTableUserRow(tableElem);
+    } else {
+      renderPossibleDatesTableDayRow(tableElem);
+    }
   } else {
     // スマホ表示
     renderPossibleDatesTableUserRow(tableElem);
@@ -46,7 +50,14 @@ function renderPossibleDatesTable(): void {
 
 const markTable: string[] = ["〇", "△", "×"];
 
+const FIX_WIDTH_COLS = 8;
+
 function renderPossibleDatesTableDayRow(tableElem: HTMLElement): void {
+  const fixWidthFlag: boolean = (possibleDatesTable.userAnswers.length + 3) <= FIX_WIDTH_COLS;
+  if (!fixWidthFlag) {
+    tableElem.style.width = "100%";
+  }
+
   const headerTr: HTMLTableRowElement = document.createElement("tr");
   tableElem.appendChild(headerTr);
   const headerTh1: HTMLTableCellElement = document.createElement("th");
@@ -69,12 +80,16 @@ function renderPossibleDatesTableDayRow(tableElem: HTMLElement): void {
   for (let userIdx:number = 0; userIdx < possibleDatesTable.userAnswers.length; userIdx++) {
     const userNameTh: HTMLTableCellElement
       = createUserNameTh(possibleDatesTable.userAnswers[userIdx]);
+    if (fixWidthFlag) {
+      userNameTh.style.width = "5em";
+    }
     headerTr.appendChild(userNameTh);
   }
 
   for (let dateIdx: number = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
     const row: HTMLTableRowElement = document.createElement("tr");
     const dateTh: HTMLTableCellElement = document.createElement("th");
+
     dateTh.innerText = possibleDatesTable.possibleDateNames[dateIdx];
     row.appendChild(dateTh);
     const td1: HTMLTableCellElement = document.createElement("td");
@@ -101,14 +116,23 @@ function renderPossibleDatesTableDayRow(tableElem: HTMLElement): void {
 }
 
 function renderPossibleDatesTableUserRow(tableElem: HTMLElement): void {
+  const fixWidthFlag: boolean = possibleDatesTable.possibleDateNames.length <= FIX_WIDTH_COLS;
+  if (!fixWidthFlag) {
+    tableElem.style.width = "100%";
+  }
+
   const headerTr: HTMLTableRowElement = document.createElement("tr");
   tableElem.appendChild(headerTr);
   const headerTh1: HTMLTableCellElement = document.createElement("th");
   headerTh1.innerText = "参加者";
+  headerTh1.style.width = "6em";
   headerTr.appendChild(headerTh1);
 
   for (let dateIdx:number = 0; dateIdx < possibleDatesTable.possibleDateNames.length; dateIdx++) {
     const dateTh: HTMLTableCellElement = document.createElement("th");
+    if (fixWidthFlag) {
+      dateTh.style.width = "5em";
+    }
     dateTh.innerText = possibleDatesTable.possibleDateNames[dateIdx];
     headerTr.appendChild(dateTh);
   }
