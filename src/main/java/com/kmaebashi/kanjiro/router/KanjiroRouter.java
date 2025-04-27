@@ -80,6 +80,8 @@ public class KanjiroRouter extends Router {
                 return OrganizerController.postEventInfo(invoker, deviceId, lastCsrfToken, false);
             } else if (route == Route.POST_ANSWER_INFO) {
                 return GuestPageController.postAnswerInfo(invoker, deviceId, lastCsrfToken);
+            } else if (route == Route.DELETE_ANSWER) {
+                return GuestPageController.deleteAnswer(invoker, deviceId, lastCsrfToken);
             } else if (route == Route.POST_DEVICE_PASSCODE) {
                 return LinkDevicePageController.postDevicePasscode(invoker, deviceId, lastCsrfToken);
             }

@@ -125,7 +125,7 @@ table td.count {
 }
 
 div.reply-button-div {
-  min-height: 100px;
+  min-height: 80px;
   padding-top: 10px;
   text-align: center;
 }
@@ -140,6 +140,19 @@ button#reply-button {
   color: white;
   background-color: #e06d15;
   border-radius: 5px;
+}
+
+div.delete-button-div {
+  width: 60%;
+  margin: 0 auto;
+  text-align: right;
+}
+
+button#delete-button {
+  background-color: #cccccc;
+  border-color: black;
+  border-width: 1px;
+  padding: 1px 5px;
 }
 
 #reply-button:hover {

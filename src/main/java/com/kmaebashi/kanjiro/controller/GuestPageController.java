@@ -5,6 +5,7 @@ import com.kmaebashi.jsonparser.JsonElement;
 import com.kmaebashi.jsonparser.JsonParser;
 import com.kmaebashi.kanjiro.common.HeaderKey;
 import com.kmaebashi.kanjiro.controller.data.AnswerInfo;
+import com.kmaebashi.kanjiro.controller.data.DeleteAnswerInfo;
 import com.kmaebashi.kanjiro.service.GuestPageService;
 import com.kmaebashi.kanjiro.util.CsrfUtil;
 import com.kmaebashi.nctfw.BadRequestException;
@@ -41,6 +42,24 @@ public class GuestPageController {
                 AnswerInfo answerInfo = ClassMapper.toObject(elem, AnswerInfo.class);
 
                 return GuestPageService.postAnswerInfo(context.getServiceInvoker(), deviceId, answerInfo);
+            }
+        });
+    }
+
+    public static RoutingResult deleteAnswer(ControllerInvoker invoker, String deviceId, String lastCsrfToken) {
+        return invoker.invoke((context) -> {
+            HttpServletRequest request = context.getServletRequest();
+            String headerToken = request.getHeader(HeaderKey.CSRF_TOKEN);
+            if (headerToken == null || !headerToken.equals(lastCsrfToken)) {
+                throw new BadRequestException("CSRFトークン不正", true);
+            }
+
+            try (JsonParser jsonParser = JsonParser.newInstance(request.getReader())) {
+
+                JsonElement elem = jsonParser.parse();
+                DeleteAnswerInfo deleteAnswerInfo = ClassMapper.toObject(elem, DeleteAnswerInfo.class);
+
+                return GuestPageService.deleteAnswer(context.getServiceInvoker(), deviceId, deleteAnswerInfo);
             }
         });
     }

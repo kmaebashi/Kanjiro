@@ -6,6 +6,9 @@ window.onload = function(e: Event): void {
 
   const replyButton: HTMLElement = document.getElementById("reply-button")!;
   replyButton.onclick = sendReply;
+
+  const deleteButton: HTMLElement = document.getElementById("delete-button")!;
+  deleteButton.onclick = deleteAnswer;
 };
 
 function handleOrientationOnChange(event: MediaQueryListEvent): void {
@@ -17,11 +20,13 @@ type UserAnswers = {
   userName: string;
   isProtected: boolean;
   answers: number[];
+  updatedAt: string | null;
 };
 
 type PossibleDatesTable = {
   possibleDateNames: string[];
   userAnswers: UserAnswers[];
+  deviceUser: string | null;
 };
 
 declare const possibleDatesTable: PossibleDatesTable;
@@ -290,3 +295,90 @@ function getAnswers(): DateAnswerInfo[] {
   return ret;
 }
 
+type DeleteAnswerInfo = {
+  eventId: string;
+  userId: string | null;
+  deleteForce: boolean;
+  updatedAt: string;
+};
+
+type DeleteAnswerResult = {
+  eventId: string;
+  deleted: boolean;
+  warningMessage: string | null;
+};
+
+async function deleteAnswer(e: Event) {
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const eventId: string = queryParams.get("eventId")!;
+  const userId: string | null = queryParams.get("userId");
+  const updatedAt: string | null = getUpdatedAt(userId);
+  if (updatedAt === null) {
+    alert("削除対象がありません。");
+    return;
+  }
+
+  const deleteAnswerInfo: DeleteAnswerInfo = {
+    eventId: eventId,
+    userId: userId,
+    deleteForce: false,
+    updatedAt: updatedAt!
+  };
+
+  const csrfToken = getCsrfToken();
+
+  let registered = false;
+  for (;;) {
+    console.log("delete loop");
+    const response = await fetch("./api/deleteanswer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Csrf-Token": csrfToken
+        },
+        body: JSON.stringify(deleteAnswerInfo)
+      });
+    console.log("response.." + response.status);
+    const retJson = await response.json();
+
+    if (!response.ok) {
+      console.log("エラー! retJson.." + retJson);
+      alert("削除に失敗しました。" + retJson.message);
+      break;
+    } else {
+      console.log("retJson.." + JSON.stringify(retJson));
+      const result = retJson as DeleteAnswerResult;
+      if (result.deleted) {
+        window.location.href = "./guest?eventId=" + eventId;
+        break;
+      } else {
+        if (confirm(result.warningMessage + "\n削除しますか?")) {
+          deleteAnswerInfo.deleteForce = true;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+}
+
+function getUpdatedAt(queryUserId: string | null): string | null {
+  let targetUserId;
+
+  if (possibleDatesTable.deviceUser === null) {
+    if (queryUserId === null) {
+      return null;
+    } else {
+      targetUserId = queryUserId;
+    }
+  } else {
+    if (queryUserId === null) {
+      targetUserId = possibleDatesTable.deviceUser;
+    } else {
+      targetUserId = queryUserId;
+    }
+  }
+  return possibleDatesTable.userAnswers
+               .find(user => user.userId == targetUserId)!.updatedAt;
+}

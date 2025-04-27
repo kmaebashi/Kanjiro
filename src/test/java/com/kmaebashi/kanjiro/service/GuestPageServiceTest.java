@@ -1,7 +1,11 @@
 package com.kmaebashi.kanjiro.service;
 
 import com.kmaebashi.dbutil.NamedParameterPreparedStatement;
+import com.kmaebashi.jsonparser.ClassMapper;
 import com.kmaebashi.kanjiro.KanjiroTestUtil;
+import com.kmaebashi.kanjiro.common.Constants;
+import com.kmaebashi.kanjiro.controller.data.DeleteAnswerInfo;
+import com.kmaebashi.kanjiro.controller.data.DeleteAnswerResult;
 import com.kmaebashi.kanjiro.controller.data.PossibleDatesTable;
 import com.kmaebashi.kanjiro.controller.data.UserAnswers;
 import com.kmaebashi.kanjiro.dbaccess.AnswerDbAccess;
@@ -9,13 +13,16 @@ import com.kmaebashi.kanjiro.dbaccess.AuthenticationDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.EventDbAccess;
 import com.kmaebashi.kanjiro.dbaccess.PossibleDateDbAccess;
 import com.kmaebashi.kanjiro.dto.AnswerDto;
+import com.kmaebashi.kanjiro.dto.DateAnswerDto;
 import com.kmaebashi.kanjiro.dto.EventDto;
 import com.kmaebashi.kanjiro.dto.PossibleDateDto;
 import com.kmaebashi.kanjiro.dto.UserDto;
 import com.kmaebashi.kanjiro.util.Log;
+import com.kmaebashi.nctfw.BadRequestException;
 import com.kmaebashi.nctfw.DbAccessContext;
 import com.kmaebashi.nctfw.DbAccessInvoker;
 import com.kmaebashi.nctfw.DocumentResult;
+import com.kmaebashi.nctfw.JsonResult;
 import com.kmaebashi.nctfw.ServiceContext;
 import com.kmaebashi.nctfw.ServiceInvoker;
 import com.kmaebashi.nctfwimpl.DbAccessContextImpl;
@@ -51,6 +58,7 @@ class GuestPageServiceTest {
         deleteAll();
         insertEvent001();
         insertEvent002();
+        insertEvent003();
     }
 
     private static void deleteAll() throws Exception {
@@ -64,6 +72,7 @@ class GuestPageServiceTest {
         KanjiroTestUtil.deleteAll(context, "DATE_ANSWERS");
     }
 
+
     private static void insertEvent001() {
         DbAccessContext context = new DbAccessContextImpl(conn, logger);
         DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
@@ -76,6 +85,17 @@ class GuestPageServiceTest {
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser002", "ゲスト1");
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser003", "ゲスト2");
         AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser004", "ゲスト3");
+        AuthenticationDbAccess.insertUser(invoker, "GuestPageSTestOUser005", "ゲスト4");
+        AuthenticationDbAccess.upsertDevice(invoker, "GuestPageSTestODevi001", LocalDateTime.now(), "dummy");
+        AuthenticationDbAccess.upsertDevice(invoker, "GuestPageSTestODevi002", LocalDateTime.now(), "dummy");
+        AuthenticationDbAccess.upsertDevice(invoker, "GuestPageSTestODevi003", LocalDateTime.now(), "dummy");
+        AuthenticationDbAccess.upsertDevice(invoker, "GuestPageSTestODevi004", LocalDateTime.now(), "dummy");
+        AuthenticationDbAccess.upsertDevice(invoker, "GuestPageSTestODevi005", LocalDateTime.now(), "dummy");
+        AuthenticationDbAccess.setUserToDevice(invoker, "GuestPageSTestODevi001", "GuestPageSTestOUser001");
+        AuthenticationDbAccess.setUserToDevice(invoker, "GuestPageSTestODevi002", "GuestPageSTestOUser002");
+        AuthenticationDbAccess.setUserToDevice(invoker, "GuestPageSTestODevi003", "GuestPageSTestOUser003");
+        AuthenticationDbAccess.setUserToDevice(invoker, "GuestPageSTestODevi004", "GuestPageSTestOUser004");
+        AuthenticationDbAccess.setUserToDevice(invoker, "GuestPageSTestODevi005", "GuestPageSTestOUser005");
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD001__01", eventId, "10/01(月)", 1);
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD002__01", eventId, "10/02(火)", 2);
         PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD003__01", eventId, "10/03(水)", 3);
@@ -155,6 +175,57 @@ class GuestPageServiceTest {
         AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD004__02", 1);
         AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD005__02", 2);
 
+    }
+
+    // deleteAnswer()テスト用
+    private static void insertEvent003() {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+
+        String eventId = "GuestPageSTestEvent003";
+        EventDbAccess.insertEvent(invoker, eventId, "幹事太郎", "GuestPageSTestOUser001",
+                                  "なんとかさん送別会", "なんとかさんの送別会です。\r\n盛大に送り出しましょう。", LocalDateTime.of(2025, 1, 31, 23, 59),
+                                  "19:00～", false, false);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD001__03", eventId, "10/01(月)", 1);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD002__03", eventId, "10/02(火)", 2);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD003__03", eventId, "10/03(水)", 3);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD004__03", eventId, "10/04(木)", 4);
+        PossibleDateDbAccess.insertPossibleDate(invoker, "GuestPageTestPD005__03", eventId, "10/05(金)", 5);
+        AnswerDbAccess.insertAnswer(invoker, eventId, "GuestPageSTestOUser001", "幹事太郎3",
+                                    "幹事太郎3です。よろしくお願いいたします。", false);
+        AnswerDbAccess.insertAnswer(invoker, eventId, "GuestPageSTestOUser002", "ゲスト1_",
+                                    "ゲスト1_です。よろしくお願いいたします。", false);
+        AnswerDbAccess.insertAnswer(invoker, eventId, "GuestPageSTestOUser003", "ゲスト2_",
+                                    "ゲスト2_です。よろしくお願いいたします。", false);
+        AnswerDbAccess.insertAnswer(invoker, eventId, "GuestPageSTestOUser004", "ゲスト3_",
+                                    "ゲスト3_です。よろしくお願いいたします。", false);
+        AnswerDbAccess.insertAnswer(invoker, eventId, "GuestPageSTestOUser005", "ゲスト4_",
+                                    "ゲスト4_です。よろしくお願いいたします。", true);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser001", "GuestPageTestPD001__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser001", "GuestPageTestPD002__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser001", "GuestPageTestPD003__03", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser001", "GuestPageTestPD004__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser001", "GuestPageTestPD005__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser002", "GuestPageTestPD001__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser002", "GuestPageTestPD002__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser002", "GuestPageTestPD003__03", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser002", "GuestPageTestPD004__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser002", "GuestPageTestPD005__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser003", "GuestPageTestPD001__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser003", "GuestPageTestPD002__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser003", "GuestPageTestPD003__03", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser003", "GuestPageTestPD004__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser003", "GuestPageTestPD005__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD001__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD002__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD003__03", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD004__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser004", "GuestPageTestPD005__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser005", "GuestPageTestPD001__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser005", "GuestPageTestPD002__03", 2);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser005", "GuestPageTestPD003__03", 3);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser005", "GuestPageTestPD004__03", 1);
+        AnswerDbAccess.insertDateAnswer(invoker, eventId, "GuestPageSTestOUser005", "GuestPageTestPD005__03", 2);
     }
 
     @AfterAll
@@ -389,7 +460,7 @@ class GuestPageServiceTest {
     }
 
     @Test
-    void renderDateFixedArea() throws Exception {
+    void renderDateFixedAreaTest001() throws Exception {
         Path htmlPath = Path.of("./src/main/resources/htmltemplate/guest.html");
         Document doc = Jsoup.parse(htmlPath.toFile(), "UTF-8");
 
@@ -475,5 +546,214 @@ class GuestPageServiceTest {
         String pdId = GuestPageService.makeSchedule(pdi);
 
         assertEquals("id3", pdId);
+    }
+
+    @Test
+    void deleteAnswerTest001() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        // ログインユーザと対象ユーザは異なるが、deleteForce=trueなので成功する
+        AnswerDto ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser002");
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = "GuestPageSTestOUser002";
+        dai.deleteForce = true;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        JsonResult result = GuestPageService.deleteAnswer(si, "dummyDeviceId", dai);
+        assertEquals("{\r\n" +
+                             "    \"deleted\":true,\r\n" +
+                             "    \"warningMessage\":\"成功しました。\"\r\n" +
+                             "}", result.getJson());
+        List<AnswerDto> answerDtoList = AnswerDbAccess.getAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(4, answerDtoList.size());
+        List<DateAnswerDto> dateAnswerDtoList = AnswerDbAccess.getDateAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(20, dateAnswerDtoList.size());
+
+        // GuestPageのクエリストリングにuserIdがなかったケース(普通のケース)
+        ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser003");
+        dai.userId = null;
+        dai.deleteForce = false;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi003", dai);
+        assertEquals("{\r\n" +
+                             "    \"deleted\":true,\r\n" +
+                             "    \"warningMessage\":\"成功しました。\"\r\n" +
+                             "}", result.getJson());
+
+        answerDtoList = AnswerDbAccess.getAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(3, answerDtoList.size());
+        dateAnswerDtoList = AnswerDbAccess.getDateAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(15, dateAnswerDtoList.size());
+
+        // GuestPageのクエリストリングにuserIdがあり、デバイスと一致している
+        ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser004");
+        dai.userId = "GuestPageSTestOUser004";
+        dai.deleteForce = false;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi004", dai);
+        assertEquals("{\r\n" +
+                             "    \"deleted\":true,\r\n" +
+                             "    \"warningMessage\":\"成功しました。\"\r\n" +
+                             "}", result.getJson());
+
+        answerDtoList = AnswerDbAccess.getAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(2, answerDtoList.size());
+        dateAnswerDtoList = AnswerDbAccess.getDateAnswers(invoker, "GuestPageSTestEvent003");
+        assertEquals(10, dateAnswerDtoList.size());
+
+        // 削除に成功した回答の削除
+        dai.userId = "GuestPageSTestOUser004";
+        dai.deleteForce = false;
+        try {
+            result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi004", dai);
+        } catch (BadRequestException ex) {
+            assertEquals("削除対象が存在しません。", ex.getMessage());
+            return;
+        }
+        fail();
+    }
+    
+    @Test
+    void deleteAnswerTest002() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "dummyEventId";
+        dai.userId = "GuestPageSTestOUser002";
+        dai.deleteForce = true;
+        dai.updatedAt = "dummy";
+        try {
+            JsonResult result = GuestPageService.deleteAnswer(si, "dummyDeviceId", dai);
+        } catch (BadRequestException ex) {
+            assertEquals("そのイベントはありません。", ex.getMessage());
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    void deleteAnswerTest003() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = null;
+        dai.deleteForce = true;
+        dai.updatedAt = "dummy";
+        try {
+            JsonResult result = GuestPageService.deleteAnswer(si, null, dai);
+        } catch (BadRequestException ex) {
+            assertEquals("削除対象が指定されていません。", ex.getMessage());
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    void deleteAnswerTest004() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        AnswerDto ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser001");
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = "GuestPageSTestOUser001";
+        dai.deleteForce = false;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        JsonResult result = GuestPageService.deleteAnswer(si, null, dai);
+        assertEquals("{\r\n" +
+                             "    \"deleted\":false,\r\n" +
+                             "    \"warningMessage\":\"あなたはユーザとして登録されていません。\"\r\n" +
+                             "}", result.getJson());
+
+    }
+
+    @Test
+    void deleteAnswerTest005() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        AnswerDto ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser001");
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = "GuestPageSTestOUser001";
+        dai.deleteForce = false;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        JsonResult result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi004", dai);
+        assertEquals("{\r\n" +
+                             "    \"deleted\":false,\r\n" +
+                             "    \"warningMessage\":\"他人の回答を削除しようとしています。\"\r\n" +
+                             "}", result.getJson());
+
+    }
+
+    @Test
+    void deleteAnswerTest006() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        AnswerDto ad = AnswerDbAccess.getAnswer(invoker, "GuestPageSTestEvent003", "GuestPageSTestOUser005");
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = "GuestPageSTestOUser005";
+        dai.deleteForce = false;
+        dai.updatedAt = Constants.lastUpdateFormatter.format(ad.updatedAt);
+        try {
+            JsonResult result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi001", dai);
+        } catch (BadRequestException ex) {
+            assertEquals("この回答はロックされています。", ex.getMessage());
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    void deleteAnswerTest007() throws Exception {
+        DbAccessContext context = new DbAccessContextImpl(conn, logger);
+        DbAccessInvoker invoker = new DbAccessInvokerImpl(context);
+        ServiceContext sc = new ServiceContextImpl(invoker,
+                                                   Paths.get("./src/main/resources/htmltemplate"),
+                                                   logger);
+        ServiceInvoker si = new ServiceInvokerImpl(sc);
+
+        DeleteAnswerInfo dai = new DeleteAnswerInfo();
+        dai.eventId = "GuestPageSTestEvent003";
+        dai.userId = "GuestPageSTestOUser005";
+        dai.deleteForce = false;
+        dai.updatedAt = "dummy";
+        try {
+            JsonResult result = GuestPageService.deleteAnswer(si, "GuestPageSTestODevi005", dai);
+        } catch (BadRequestException ex) {
+            assertEquals("この画面を開いている間に回答が修正されています。", ex.getMessage());
+            return;
+        }
+        fail();
     }
 }

@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Locale;
 
 import com.kmaebashi.jsonparser.ClassMapper;
+import com.kmaebashi.kanjiro.common.Constants;
 import com.kmaebashi.kanjiro.controller.data.AnswerInfo;
 import com.kmaebashi.kanjiro.controller.data.DateAnswerInfo;
+import com.kmaebashi.kanjiro.controller.data.DeleteAnswerInfo;
+import com.kmaebashi.kanjiro.controller.data.DeleteAnswerResult;
 import com.kmaebashi.kanjiro.controller.data.EventInfo;
 import com.kmaebashi.kanjiro.controller.data.PossibleDatesTable;
 import com.kmaebashi.kanjiro.controller.data.PostAnswerInfoResult;
@@ -132,9 +135,11 @@ public class GuestPageService {
             ua.userName = ans.userName;
             ua.isProtected = ans.isProtected;
             ua.answers = new int[possibleDateDtoList.size()];
+            ua.updatedAt = Constants.lastUpdateFormatter.format(ans.updatedAt);
             pdt.userAnswers[ansIdx] = ua;
             ansIdx++;
         }
+        pdt.deviceUser = deviceUser != null ? deviceUser.userId : null;
         List<DateAnswerDto> dateAnswerDtoList
                 = AnswerDbAccess.getDateAnswers(context.getDbAccessInvoker(), eventDto.eventId);
 
@@ -259,6 +264,9 @@ public class GuestPageService {
             String message = searchMessage(answerDtoList, ua.userId);
             Element messageElem = doc.getElementById("comment-textarea");
             messageElem.text(message);
+        } else {
+            Element deleteButtonDivElem = doc.getElementById("delete-button-div-id");
+            deleteButtonDivElem.remove();
         }
     }
 
@@ -374,12 +382,16 @@ public class GuestPageService {
 
     public static JsonResult postAnswerInfo(ServiceInvoker invoker, String deviceId, AnswerInfo answerInfo) {
         return invoker.invoke((context) -> {
+            EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), answerInfo.eventId);
+            if (eventDto == null) {
+                throw new BadRequestException("そのイベントはありません。");
+            }
             String deviceUserId = DbUtil.getOrCreateUser(context, deviceId, answerInfo.userName);
             String userId = deviceUserId;
             if (answerInfo.userId != null) {
                 if (!deviceUserId.equals(answerInfo.userId)) {
                     AnswerDto dbAnswer = AnswerDbAccess.getAnswer(context.getDbAccessInvoker(),
-                            answerInfo.eventId, answerInfo.userId);
+                                                                  answerInfo.eventId, answerInfo.userId);
                     if (dbAnswer.isProtected) {
                         throw new BadRequestException("この回答はロックされています。", true);
                     }
@@ -399,5 +411,48 @@ public class GuestPageService {
 
             return new JsonResult(json);
         }, InvokerOption.TRANSACTIONAL);
+    }
+
+    public static JsonResult deleteAnswer(ServiceInvoker invoker, String deviceId, DeleteAnswerInfo deleteAnswerInfo) {
+        return invoker.invoke((context) -> {
+            EventDto eventDto = EventDbAccess.getEvent(context.getDbAccessInvoker(), deleteAnswerInfo.eventId);
+            if (eventDto == null) {
+                throw new BadRequestException("そのイベントはありません。");
+            }
+            String targetUserId = null;
+            String deviceUserId = AuthenticationDbAccess.getUserIdByDeviceId(context.getDbAccessInvoker(), deviceId);
+            if (deleteAnswerInfo.userId == null) {
+                targetUserId = deviceUserId;
+            } else {
+                targetUserId = deleteAnswerInfo.userId;
+            }
+            if (targetUserId == null) {
+                throw new BadRequestException("削除対象が指定されていません。");
+            }
+            AnswerDto targetAnswer = AnswerDbAccess.getAnswer(context.getDbAccessInvoker(), deleteAnswerInfo.eventId, targetUserId);
+            if (targetAnswer == null) {
+                throw new BadRequestException("削除対象が存在しません。");
+            }
+            if (targetAnswer.isProtected && !targetAnswer.userId.equals(deviceUserId)) {
+                throw new BadRequestException("この回答はロックされています。");
+            }
+            if (!deleteAnswerInfo.updatedAt.equals(Constants.lastUpdateFormatter.format(targetAnswer.updatedAt))) {
+                throw new BadRequestException("この画面を開いている間に回答が修正されています。");
+            }
+            if (!deleteAnswerInfo.deleteForce) {
+                if (deviceUserId == null) {
+                    DeleteAnswerResult dar = new DeleteAnswerResult(false, "あなたはユーザとして登録されていません。");
+                    return ResultFactory.createJsonResult(dar);
+                }
+                if (!deviceUserId.equals(targetUserId)) {
+                    DeleteAnswerResult dar = new DeleteAnswerResult(false, "他人の回答を削除しようとしています。");
+                    return ResultFactory.createJsonResult(dar);
+                }
+            }
+            AnswerDbAccess.deleteDateAnswer(context.getDbAccessInvoker(), deleteAnswerInfo.eventId, targetUserId);
+            AnswerDbAccess.deleteAnswer(context.getDbAccessInvoker(), deleteAnswerInfo.eventId, targetUserId);
+            DeleteAnswerResult dar = new DeleteAnswerResult(true, "成功しました。");
+            return ResultFactory.createJsonResult(dar);
+        });
     }
 }

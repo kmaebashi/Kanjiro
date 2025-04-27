@@ -28,6 +28,8 @@ public class SelectRoute {
                 return Route.MODIFY_EVENT_INFO;
             } else if (path.equals("api/postanswerinfo")) {
                 return Route.POST_ANSWER_INFO;
+            } else if (path.equals("api/deleteanswer")) {
+                return Route.DELETE_ANSWER;
             } else if (path.equals("api/postdevicepasscode")) {
                 return Route.POST_DEVICE_PASSCODE;
             }

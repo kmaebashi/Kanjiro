@@ -14,6 +14,8 @@ window.onload = function (e) {
     mediaQueryList.addEventListener("change", handleOrientationOnChange);
     const replyButton = document.getElementById("reply-button");
     replyButton.onclick = sendReply;
+    const deleteButton = document.getElementById("delete-button");
+    deleteButton.onclick = deleteAnswer;
 };
 function handleOrientationOnChange(event) {
     renderPossibleDatesTable();
@@ -236,4 +238,79 @@ function getAnswers() {
         ret.push(dateAnswerInfo);
     }
     return ret;
+}
+function deleteAnswer(e) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const queryParams = new URLSearchParams(window.location.search);
+        const eventId = queryParams.get("eventId");
+        const userId = queryParams.get("userId");
+        const updatedAt = getUpdatedAt(userId);
+        if (updatedAt === null) {
+            alert("削除対象がありません。");
+            return;
+        }
+        const deleteAnswerInfo = {
+            eventId: eventId,
+            userId: userId,
+            deleteForce: false,
+            updatedAt: updatedAt
+        };
+        const csrfToken = getCsrfToken();
+        let registered = false;
+        for (;;) {
+            console.log("delete loop");
+            const response = yield fetch("./api/deleteanswer", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Csrf-Token": csrfToken
+                },
+                body: JSON.stringify(deleteAnswerInfo)
+            });
+            console.log("response.." + response.status);
+            const retJson = yield response.json();
+            if (!response.ok) {
+                console.log("エラー! retJson.." + retJson);
+                alert("削除に失敗しました。" + retJson.message);
+                break;
+            }
+            else {
+                console.log("retJson.." + JSON.stringify(retJson));
+                const result = retJson;
+                if (result.deleted) {
+                    window.location.href = "./guest?eventId=" + eventId;
+                    break;
+                }
+                else {
+                    if (confirm(result.warningMessage + "\n削除しますか?")) {
+                        deleteAnswerInfo.deleteForce = true;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+    });
+}
+function getUpdatedAt(queryUserId) {
+    let targetUserId;
+    if (possibleDatesTable.deviceUser === null) {
+        if (queryUserId === null) {
+            return null;
+        }
+        else {
+            targetUserId = queryUserId;
+        }
+    }
+    else {
+        if (queryUserId === null) {
+            targetUserId = possibleDatesTable.deviceUser;
+        }
+        else {
+            targetUserId = queryUserId;
+        }
+    }
+    return possibleDatesTable.userAnswers
+        .find(user => user.userId == targetUserId).updatedAt;
 }

@@ -2,6 +2,7 @@ package com.kmaebashi.kanjiro.service;
 
 import com.kmaebashi.jsonparser.ClassMapper;
 import com.kmaebashi.kanjiro.common.Answer;
+import com.kmaebashi.kanjiro.common.Constants;
 import com.kmaebashi.kanjiro.controller.data.EventInfo;
 import com.kmaebashi.kanjiro.controller.data.PostEventInfoResult;
 import com.kmaebashi.kanjiro.dbaccess.AnswerDbAccess;
@@ -244,7 +245,6 @@ public class OrganizerPageService {
         });
     }
 
-    private static DateTimeFormatter lastUpdateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
     static String getAnswerLastUpdate(List<AnswerDto> answerDtoList) {
         LocalDateTime lastUpdatedAt = null;
         for (AnswerDto ad : answerDtoList) {
@@ -255,7 +255,7 @@ public class OrganizerPageService {
         if (lastUpdatedAt == null) {
             return null;
         } else {
-            return lastUpdateFormatter.format(lastUpdatedAt);
+            return Constants.lastUpdateFormatter.format(lastUpdatedAt);
         }
     }
 

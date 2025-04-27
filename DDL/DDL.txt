@@ -91,3 +91,11 @@ create table device_passcode (
   created_at timestamp not null,
   primary key (event_id, passcode)
 );
+
+create table bbs_messages (
+  event_id char(22),
+  message_number integer,
+  user_id char(22) not null,
+  poster_name varchar(32) not null,
+  primary key (event_id, message_number)
+);

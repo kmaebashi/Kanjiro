@@ -5,4 +5,5 @@ public class UserAnswers {
     public String userName;
     public boolean isProtected;
     public int[] answers;
+    public String updatedAt;
 }
